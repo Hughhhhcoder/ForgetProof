@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ForgetProof Conformance Matrix</title>
+    <style>
+      body { max-width: 980px; margin: 48px auto; padding: 0 20px; font: 16px/1.5 system-ui, sans-serif; background: #0b1020; color: #edf2ff; }
+      h1 { letter-spacing: -.04em; font-size: 48px; margin-bottom: 4px; }
+      p { color: #aebbd4; } table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+      th, td { text-align: left; padding: 13px; border-bottom: 1px solid #2b395c; } th { color: #aebbd4; }
+      .PASS { color: #46dc88; } .FAIL { color: #ff7082; } .UNKNOWN, .SKIP { color: #ffd16a; }
+      code { color: #b9d7ff; }
+    </style>
+  </head>
+  <body>
+    <p>FORGETPROOF · PROVE YOUR AI FORGOT</p>
+    <h1>Conformance Matrix</h1>
+    <p>Static, evidence-linked results. No aggregate score. Unknown means unknown.</p>
+    <div id="matrix">Loading verified bundles…</div>
+    <script>
+      fetch('./matrix.json').then(r => r.json()).then(data => {
+        const rows = data.results || [];
+        document.querySelector('#matrix').innerHTML = rows.length ?
+          '<table><thead><tr><th>Adapter</th><th>Backend</th><th>Profile</th><th>Status</th><th>Evidence</th></tr></thead><tbody>' +
+          rows.map(x => '<tr><td><code>' + x.adapter + '</code></td><td>' + x.backend + '</td><td>' + x.profile + '</td><td class="' + x.status + '">' + x.status + '</td><td><a href="' + x.evidence + '">bundle</a></td></tr>').join('') +
+          '</tbody></table>' : '<p>No verified public bundles have been submitted yet.</p>';
+      }).catch(() => { document.querySelector('#matrix').textContent = 'Matrix data unavailable.'; });
+    </script>
+  </body>
+</html>

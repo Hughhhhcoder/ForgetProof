@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forgetproof.dev/schema/scenario/v1alpha1.json",
+  "title": "ForgetProof Erasure Scenario",
+  "type": "object",
+  "required": ["apiVersion", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "forgetproof.dev/v1alpha1" },
+    "kind": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "spec": {
+      "type": "object",
+      "required": ["adapter", "fixtures", "erase", "probes"],
+      "properties": {
+        "adapter": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "mode": { "type": "string" },
+            "config": { "type": "object", "additionalProperties": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "isolation": {
+          "type": "object",
+          "properties": {
+            "scope": { "type": "string" },
+            "subject": { "type": "string" },
+            "agent": { "type": "string" },
+            "thread": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "fixtures": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "content"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "content": { "type": "string", "minLength": 1 },
+              "target": { "type": "boolean" },
+              "kind": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "settle": {
+          "type": "object",
+          "properties": {
+            "timeout_ms": { "type": "integer", "minimum": 1 },
+            "interval_ms": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "erase": {
+          "type": "object",
+          "properties": {
+            "intent": { "enum": ["object_delete", "subject_erase", "access_revoke", "derived_purge"] },
+            "target": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "probes": {
+          "type": "object",
+          "required": ["before", "after"],
+          "properties": {
+            "before": { "$ref": "#/$defs/probes" },
+            "after": { "$ref": "#/$defs/probes" }
+          },
+          "additionalProperties": false
+        },
+        "profiles": {
+          "type": "array",
+          "items": { "enum": ["FP-Object", "FP-Scope", "FP-Derived", "FP-Agent"] }
+        },
+        "privacy": {
+          "type": "object",
+          "properties": { "raw_payloads": { "type": "boolean", "default": false } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "probes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "fixture"],
+          "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "fixture": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["exact", "lexical", "semantic", "inspect", "agent"] },
+          "query": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

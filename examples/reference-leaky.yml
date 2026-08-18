@@ -1,0 +1,52 @@
+apiVersion: forgetproof.dev/v1alpha1
+kind: ErasureScenario
+metadata:
+  name: reference-leaky
+  description: A deliberately leaky backend leaves derived artifacts after deletion.
+spec:
+  adapter:
+    name: reference-leaky
+    mode: leaky
+  isolation:
+    scope: run
+  fixtures:
+    - id: target
+      content: "ForgetProof canary: target alpha 7f3e9d"
+      target: true
+    - id: control
+      content: "ForgetProof canary: control beta 91c4a2"
+      target: false
+  settle:
+    timeout_ms: 5000
+    interval_ms: 25
+  erase:
+    intent: subject_erase
+    target: target
+  probes:
+    before:
+      - id: target-before
+        fixture: target
+        kind: exact
+      - id: control-before
+        fixture: control
+        kind: exact
+    after:
+      - id: target-after
+        fixture: target
+        kind: exact
+      - id: control-after
+        fixture: control
+        kind: exact
+      - id: target-derived-after
+        fixture: target
+        kind: inspect
+      - id: target-agent-after
+        fixture: target
+        kind: agent
+  profiles:
+    - FP-Object
+    - FP-Scope
+    - FP-Derived
+    - FP-Agent
+  privacy:
+    raw_payloads: false

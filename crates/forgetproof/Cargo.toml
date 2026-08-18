@@ -1,0 +1,18 @@
+[package]
+name = "forgetproof"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Evidence-driven conformance tests for AI memory erasure"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+sha2.workspace = true
+
+[[bin]]
+name = "forgetproof"
+path = "src/main.rs"

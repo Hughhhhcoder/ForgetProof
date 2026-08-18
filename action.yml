@@ -1,0 +1,19 @@
+name: ForgetProof
+description: Run AI memory erasure conformance tests and upload evidence.
+inputs:
+  scenario:
+    description: Path to a ForgetProof scenario relative to the repository.
+    required: true
+  allow-network:
+    description: Explicitly allow calls to non-loopback backends.
+    required: false
+    default: "false"
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - run
+    - /github/workspace/${{ inputs.scenario }}
+    - --output
+    - /github/workspace/.forgetproof/runs
+    - ${{ inputs.allow-network == 'true' && '--allow-network' || '' }}

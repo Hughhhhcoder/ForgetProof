@@ -1,0 +1,9 @@
+.git
+.github
+target
+.forgetproof
+__pycache__
+*.pyc
+.venv
+dist
+build

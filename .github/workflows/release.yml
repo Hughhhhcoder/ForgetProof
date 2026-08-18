@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  binaries:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            archive: forgetproof-linux-x86_64
+            binary: target/release/forgetproof
+          - os: macos-latest
+            archive: forgetproof-macos-arm64
+            binary: target/release/forgetproof
+          - os: windows-latest
+            archive: forgetproof-windows-x86_64
+            binary: target/release/forgetproof.exe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - name: Package Unix binary
+        if: runner.os != 'Windows'
+        run: tar -czf ${{ matrix.archive }}.tar.gz -C target/release forgetproof
+      - name: Package Windows binary
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path target/release/forgetproof.exe -DestinationPath ${{ matrix.archive }}.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: |
+            ${{ matrix.archive }}.tar.gz
+            ${{ matrix.archive }}.zip
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade build
+      - run: python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forgetproof-adapters-python
+          path: dist/

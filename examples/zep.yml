@@ -1,0 +1,45 @@
+apiVersion: forgetproof.dev/v1alpha1
+kind: ErasureScenario
+metadata:
+  name: zep-erasure
+  description: Zep episode/thread graph erasure with node and summary inspection.
+spec:
+  adapter:
+    name: zep
+    mode: default
+    config:
+      base_url: http://localhost:8000
+  isolation:
+    scope: run
+  fixtures:
+    - id: target
+      content: "ForgetProof Zep canary target 31a9e2"
+      target: true
+    - id: control
+      content: "ForgetProof Zep control 8c2d10"
+      target: false
+  settle:
+    timeout_ms: 30000
+    interval_ms: 1000
+  erase:
+    intent: subject_erase
+    target: target
+  probes:
+    before:
+      - id: target-before
+        fixture: target
+        kind: semantic
+      - id: control-before
+        fixture: control
+        kind: semantic
+    after:
+      - id: target-after
+        fixture: target
+        kind: semantic
+      - id: control-after
+        fixture: control
+        kind: semantic
+      - id: target-derived-after
+        fixture: target
+        kind: inspect
+  profiles: [FP-Object, FP-Scope, FP-Derived]

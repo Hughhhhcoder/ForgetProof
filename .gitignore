@@ -1,0 +1,10 @@
+/target/
+/.forgetproof/
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+.env
+dist/
+build/
+*.egg-info/
