@@ -3,7 +3,7 @@ name = "forgetproof"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Evidence-driven conformance tests for AI memory erasure"
+description = "Evidence-driven conformance tests for AI memory erasure / 面向 AI 记忆遗忘的证据驱动认证测试"
 
 [dependencies]
 anyhow.workspace = true

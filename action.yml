@@ -1,11 +1,11 @@
-name: ForgetProof
-description: Run AI memory erasure conformance tests and upload evidence.
+name: ForgetProof / 遗忘认证
+description: Run AI memory erasure conformance tests and upload evidence / 运行 AI 记忆遗忘认证测试并上传证据。
 inputs:
   scenario:
-    description: Path to a ForgetProof scenario relative to the repository.
+    description: Path to a ForgetProof scenario relative to the repository / 相对于仓库根目录的 ForgetProof 场景路径。
     required: true
   allow-network:
-    description: Explicitly allow calls to non-loopback backends.
+    description: Explicitly allow calls to non-loopback backends / 显式允许访问非本机后端。
     required: false
     default: "false"
 runs:
@@ -16,4 +16,4 @@ runs:
     - /github/workspace/${{ inputs.scenario }}
     - --output
     - /github/workspace/.forgetproof/runs
-    - ${{ inputs.allow-network == 'true' && '--allow-network' || '' }}
+    - --allow-network=${{ inputs.allow-network }}

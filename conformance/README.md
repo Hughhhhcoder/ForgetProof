@@ -1,5 +1,9 @@
 # Public conformance submissions
 
+[English](README.md) · [简体中文](README.zh-CN.md)
+
+![ForgetProof evidence flow](../assets/forgetproof-hero.png)
+
 Each JSON file in this directory is a reviewed, redacted pointer to an evidence bundle. The Pages workflow converts it into the static matrix; it does not compute a score.
 
 ```json

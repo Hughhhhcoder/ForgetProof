@@ -41,7 +41,7 @@ enum Command {
         scenario: PathBuf,
         #[arg(long, default_value = ".forgetproof/runs")]
         output: PathBuf,
-        #[arg(long)]
+        #[arg(long, default_value_t = false, default_missing_value = "true", num_args = 0..=1)]
         allow_network: bool,
     },
     /// Verify an evidence bundle's checksums.

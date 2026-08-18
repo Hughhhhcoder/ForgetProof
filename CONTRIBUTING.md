@@ -1,5 +1,7 @@
 # Contributing to ForgetProof
 
+[English](CONTRIBUTING.md) · [简体中文](CONTRIBUTING.zh-CN.md)
+
 The most valuable contributions are new adapters, reproducible erasure scenarios, and tests that expose a concrete residual-memory boundary.
 
 Before opening a pull request:

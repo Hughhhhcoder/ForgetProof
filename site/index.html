@@ -3,29 +3,152 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ForgetProof Conformance Matrix</title>
+    <title>ForgetProof · Conformance Matrix</title>
     <style>
-      body { max-width: 980px; margin: 48px auto; padding: 0 20px; font: 16px/1.5 system-ui, sans-serif; background: #0b1020; color: #edf2ff; }
-      h1 { letter-spacing: -.04em; font-size: 48px; margin-bottom: 4px; }
-      p { color: #aebbd4; } table { width: 100%; border-collapse: collapse; margin-top: 28px; }
-      th, td { text-align: left; padding: 13px; border-bottom: 1px solid #2b395c; } th { color: #aebbd4; }
-      .PASS { color: #46dc88; } .FAIL { color: #ff7082; } .UNKNOWN, .SKIP { color: #ffd16a; }
-      code { color: #b9d7ff; }
+      :root {
+        color-scheme: dark;
+        --bg: #070c18;
+        --panel: rgba(19, 29, 51, .86);
+        --line: #2a3a61;
+        --text: #edf3ff;
+        --muted: #aab9d4;
+        --cyan: #7fdbff;
+        --mint: #58df99;
+        --amber: #ffd16a;
+        --red: #ff7789;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 75% 5%, #182a56 0, transparent 36rem), var(--bg);
+        color: var(--text);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      main { max-width: 1180px; margin: 0 auto; padding: 30px 22px 72px; }
+      a { color: var(--cyan); }
+      .topbar, .language { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+      .topbar { margin-bottom: 34px; color: var(--muted); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+      .language button { border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; padding: 7px 12px; }
+      .language button.active { background: #20345e; color: var(--text); }
+      .hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr); align-items: center; gap: 32px; margin-bottom: 46px; }
+      .hero-copy { max-width: 570px; }
+      h1 { margin: 0 0 12px; font-size: clamp(42px, 8vw, 84px); line-height: .98; letter-spacing: -.07em; }
+      h2 { margin: 44px 0 14px; font-size: 28px; letter-spacing: -.04em; }
+      h3 { margin: 0 0 5px; }
+      p { color: var(--muted); }
+      .lede { font-size: 20px; line-height: 1.45; }
+      .hero-image { width: 100%; border: 1px solid #365180; border-radius: 24px; box-shadow: 0 30px 100px rgba(44, 129, 255, .16); }
+      .claim { margin: 22px 0 0; border-left: 3px solid var(--cyan); padding: 14px 18px; background: rgba(20, 36, 69, .66); color: var(--text); font-size: 20px; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+      .card p { margin: 5px 0 0; font-size: 14px; }
+      .matrix-wrap { overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; }
+      table { width: 100%; border-collapse: collapse; min-width: 650px; }
+      th, td { padding: 14px 16px; border-bottom: 1px solid var(--line); text-align: left; }
+      th { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+      tr:last-child td { border-bottom: 0; }
+      code { color: #c4dcff; }
+      .PASS { color: var(--mint); font-weight: 700; } .FAIL { color: var(--red); font-weight: 700; } .UNKNOWN, .SKIP { color: var(--amber); font-weight: 700; }
+      .muted { color: var(--muted); }
+      .lang-zh { display: none; }
+      @media (max-width: 780px) { .hero { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } .hero-image { order: -1; } }
     </style>
   </head>
   <body>
-    <p>FORGETPROOF · PROVE YOUR AI FORGOT</p>
-    <h1>Conformance Matrix</h1>
-    <p>Static, evidence-linked results. No aggregate score. Unknown means unknown.</p>
-    <div id="matrix">Loading verified bundles…</div>
+    <main>
+      <header class="topbar">
+        <span>FORGETPROOF · PROVE YOUR AI FORGOT</span>
+        <nav class="language" aria-label="Language">
+          <button class="active" data-language="en">English</button>
+          <button data-language="zh">中文</button>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy lang-en">
+          <h1>Conformance<br />for forgetting.</h1>
+          <p class="lede">A practical way to test whether an AI memory system really erased a piece of information.</p>
+          <div class="claim">DELETE 200 OK ≠ the canary is no longer observable.</div>
+        </div>
+        <div class="hero-copy lang-zh">
+          <h1>给“遗忘”<br />做认证。</h1>
+          <p class="lede">用一套可重复的测试，检查 AI 记忆系统是否真的删除了一条信息。</p>
+          <div class="claim">DELETE 200 OK ≠ canary 已经无法被召回。</div>
+        </div>
+        <img class="hero-image" src="./assets/forgetproof-hero.png" alt="A synthetic canary disappearing from a memory graph while an evidence ledger verifies the change" />
+      </section>
+
+      <section class="lang-en">
+        <h2>What this matrix means</h2>
+        <div class="grid">
+          <article class="card"><h3>PASS</h3><p>Every required observable check passed.</p></article>
+          <article class="card"><h3>FAIL</h3><p>A probe still found the target or a forbidden derivative.</p></article>
+          <article class="card"><h3>UNKNOWN</h3><p>The backend did not expose enough information to make a claim.</p></article>
+        </div>
+      </section>
+      <section class="lang-zh">
+        <h2>如何理解这张矩阵</h2>
+        <div class="grid">
+          <article class="card"><h3>PASS</h3><p>所有必需的可观察检查都通过了。</p></article>
+          <article class="card"><h3>FAIL</h3><p>某个探针仍然找到了目标数据或被禁止的衍生数据。</p></article>
+          <article class="card"><h3>UNKNOWN</h3><p>后端没有公开足够信息，无法作出更强结论。</p></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="lang-en">
+          <h2>Public conformance results</h2>
+          <p>Results are evidence-linked and versioned. There is no aggregate score. Unknown means unknown.</p>
+        </div>
+        <div class="lang-zh">
+          <h2>公开认证结果</h2>
+          <p>每条结果都关联证据包并记录后端版本。这里没有综合分数；Unknown 就是未知。</p>
+        </div>
+        <div class="matrix-wrap"><div id="matrix" class="card">Loading verified bundles…</div></div>
+      </section>
+
+      <section class="lang-en">
+        <h2>What ForgetProof does not claim</h2>
+        <p>It does not prove provider logs, backups, physical storage erasure, model-weight unlearning, or anything outside the adapter’s observable boundary.</p>
+      </section>
+      <section class="lang-zh">
+        <h2>ForgetProof 不会声称什么</h2>
+        <p>它不会证明服务商日志、备份、物理存储已经删除，也不会证明模型权重完成反学习，更不会对适配器观察边界之外的事情作保证。</p>
+      </section>
+      <footer class="muted">
+        <span class="lang-en"><a href="https://github.com/Hughhhhcoder/ForgetProof">GitHub repository</a> · <a href="https://github.com/Hughhhhcoder/ForgetProof/blob/agent/forgetproof-v0.1/README.md">README</a></span>
+        <span class="lang-zh"><a href="https://github.com/Hughhhhcoder/ForgetProof">GitHub 仓库</a> · <a href="https://github.com/Hughhhhcoder/ForgetProof/blob/agent/forgetproof-v0.1/README.zh-CN.md">中文说明</a></span>
+      </footer>
+    </main>
     <script>
-      fetch('./matrix.json').then(r => r.json()).then(data => {
+      const labels = {
+        en: { title: 'ForgetProof · Conformance Matrix', heroAlt: 'A synthetic canary disappearing from a memory graph while an evidence ledger verifies the change', loading: 'Loading verified bundles…', empty: 'No verified public bundles have been submitted yet.', unavailable: 'Matrix data unavailable.', adapter: 'Adapter', backend: 'Backend', profile: 'Profile', status: 'Status', evidence: 'Evidence', bundle: 'bundle' },
+        zh: { title: 'ForgetProof · 认证矩阵', heroAlt: '合成 canary 从记忆图谱中消失，同时由证据账本确认变化', loading: '正在加载已验证的证据包……', empty: '暂时还没有公开提交的已验证证据包。', unavailable: '认证矩阵暂时不可用。', adapter: '适配器', backend: '后端', profile: '档案', status: '状态', evidence: '证据', bundle: '证据包' }
+      };
+      let language = 'en';
+      const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      function render(data) {
+        const copy = labels[language];
         const rows = data.results || [];
-        document.querySelector('#matrix').innerHTML = rows.length ?
-          '<table><thead><tr><th>Adapter</th><th>Backend</th><th>Profile</th><th>Status</th><th>Evidence</th></tr></thead><tbody>' +
-          rows.map(x => '<tr><td><code>' + x.adapter + '</code></td><td>' + x.backend + '</td><td>' + x.profile + '</td><td class="' + x.status + '">' + x.status + '</td><td><a href="' + x.evidence + '">bundle</a></td></tr>').join('') +
-          '</tbody></table>' : '<p>No verified public bundles have been submitted yet.</p>';
-      }).catch(() => { document.querySelector('#matrix').textContent = 'Matrix data unavailable.'; });
+        const target = document.querySelector('#matrix');
+        target.innerHTML = rows.length ?
+          '<table><thead><tr><th>' + copy.adapter + '</th><th>' + copy.backend + '</th><th>' + copy.profile + '</th><th>' + copy.status + '</th><th>' + copy.evidence + '</th></tr></thead><tbody>' +
+          rows.map(x => '<tr><td><code>' + escapeHtml(x.adapter) + '</code></td><td>' + escapeHtml(x.backend) + '</td><td>' + escapeHtml(x.profile) + '</td><td class="' + escapeHtml(x.status) + '">' + escapeHtml(x.status) + '</td><td><a href="' + escapeHtml(x.evidence) + '">' + copy.bundle + '</a></td></tr>').join('') +
+          '</tbody></table>' : '<p class="muted">' + copy.empty + '</p>';
+      }
+      let matrixData = { results: [] };
+      fetch('./matrix.json').then(response => response.json()).then(data => { matrixData = data; render(data); }).catch(() => { document.querySelector('#matrix').textContent = labels[language].unavailable; });
+      document.querySelectorAll('[data-language]').forEach(button => button.addEventListener('click', () => {
+        language = button.dataset.language;
+        document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+        document.title = labels[language].title;
+        document.querySelector('.hero-image').alt = labels[language].heroAlt;
+        document.querySelectorAll('[data-language]').forEach(item => item.classList.toggle('active', item === button));
+        document.querySelectorAll('.lang-en').forEach(item => item.style.display = language === 'en' ? '' : 'none');
+        document.querySelectorAll('.lang-zh').forEach(item => item.style.display = language === 'zh' ? '' : 'none');
+        render(matrixData);
+      }));
     </script>
   </body>
 </html>

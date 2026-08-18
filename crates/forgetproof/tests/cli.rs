@@ -25,6 +25,7 @@ fn clean_backend_passes_and_bundle_verifies() {
             "examples/reference-clean.yml",
             "--output",
             output.to_str().unwrap(),
+            "--allow-network=false",
         ])
         .output()
         .unwrap();
