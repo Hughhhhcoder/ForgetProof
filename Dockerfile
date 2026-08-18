@@ -3,6 +3,7 @@ FROM rust:1.91-bookworm AS builder
 WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
+COPY examples ./examples
 RUN cargo build --release
 
 FROM python:3.11-slim
