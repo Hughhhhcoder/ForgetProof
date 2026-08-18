@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="ForgetProof proves whether an AI memory system really forgot. / 用证据验证 AI 记忆系统是否真的遗忘。" />
+    <meta property="og:title" content="ForgetProof · Prove your AI forgot" />
+    <meta property="og:description" content="Evidence-driven conformance tests for AI memory erasure." />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <title>ForgetProof · Conformance Matrix</title>
     <style>
       :root {
@@ -40,6 +44,11 @@
       .lede { font-size: 20px; line-height: 1.45; }
       .hero-image { width: 100%; border: 1px solid #365180; border-radius: 24px; box-shadow: 0 30px 100px rgba(44, 129, 255, .16); }
       .claim { margin: 22px 0 0; border-left: 3px solid var(--cyan); padding: 14px 18px; background: rgba(20, 36, 69, .66); color: var(--text); font-size: 20px; }
+      .compare { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .compare .card { min-height: 190px; }
+      .eyebrow { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .12em; }
+      .status-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 13px; padding: 7px 10px; border-radius: 999px; background: rgba(255, 119, 137, .12); color: var(--red); font-size: 13px; font-weight: 700; }
+      .status-line.good { background: rgba(88, 223, 153, .12); color: var(--mint); }
       .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
       .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
       .card p { margin: 5px 0 0; font-size: 14px; }
@@ -52,7 +61,7 @@
       .PASS { color: var(--mint); font-weight: 700; } .FAIL { color: var(--red); font-weight: 700; } .UNKNOWN, .SKIP { color: var(--amber); font-weight: 700; }
       .muted { color: var(--muted); }
       .lang-zh { display: none; }
-      @media (max-width: 780px) { .hero { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } .hero-image { order: -1; } }
+      @media (max-width: 780px) { .hero { grid-template-columns: 1fr; } .grid, .compare { grid-template-columns: 1fr; } .hero-image { order: -1; } }
     </style>
   </head>
   <body>
@@ -77,6 +86,21 @@
           <div class="claim">DELETE 200 OK ≠ canary 已经无法被召回。</div>
         </div>
         <img class="hero-image" src="./assets/forgetproof-hero.png" alt="A synthetic canary disappearing from a memory graph while an evidence ledger verifies the change" />
+      </section>
+
+      <section class="lang-en">
+        <h2>From “trust me” to evidence</h2>
+        <div class="compare">
+          <article class="card"><span class="eyebrow">BEFORE</span><h3>DELETE 200 OK</h3><p>The API accepted the request. You still do not know whether a summary, index, graph, or Agent path can recall the canary.</p><div class="status-line">⚠️ Claim not proven</div></article>
+          <article class="card"><span class="eyebrow">AFTER</span><h3>Evidence bundle</h3><p>Before/after probes, control fixtures, capability limits, and a SHA-256 manifest make the result reviewable.</p><div class="status-line good">✅ PASS · FAIL · UNKNOWN</div></article>
+        </div>
+      </section>
+      <section class="lang-zh">
+        <h2>从“相信我”到证据</h2>
+        <div class="compare">
+          <article class="card"><span class="eyebrow">之前</span><h3>DELETE 200 OK</h3><p>API 接受了删除请求，但你仍不知道摘要、索引、图谱或 Agent 路径是否还能召回 canary。</p><div class="status-line">⚠️ 结论还没有被证明</div></article>
+          <article class="card"><span class="eyebrow">之后</span><h3>证据包</h3><p>删除前后探针、控制 canary、能力边界和 SHA-256 清单，让结果可以审阅和复现。</p><div class="status-line good">✅ PASS · FAIL · UNKNOWN</div></article>
+        </div>
       </section>
 
       <section class="lang-en">
@@ -117,14 +141,14 @@
         <p>它不会证明服务商日志、备份、物理存储已经删除，也不会证明模型权重完成反学习，更不会对适配器观察边界之外的事情作保证。</p>
       </section>
       <footer class="muted">
-        <span class="lang-en"><a href="https://github.com/Hughhhhcoder/ForgetProof">GitHub repository</a> · <a href="https://github.com/Hughhhhcoder/ForgetProof/blob/agent/forgetproof-v0.1/README.md">README</a></span>
-        <span class="lang-zh"><a href="https://github.com/Hughhhhcoder/ForgetProof">GitHub 仓库</a> · <a href="https://github.com/Hughhhhcoder/ForgetProof/blob/agent/forgetproof-v0.1/README.zh-CN.md">中文说明</a></span>
+        <span class="lang-en"><a href="https://github.com/Hughhhhcoder/ForgetProof">GitHub repository</a> · <a href="https://github.com/Hughhhhcoder/ForgetProof/blob/main/README.md">README</a></span>
+        <span class="lang-zh"><a href="https://github.com/Hughhhhcoder/ForgetProof">GitHub 仓库</a> · <a href="https://github.com/Hughhhhcoder/ForgetProof/blob/main/README.zh-CN.md">中文说明</a></span>
       </footer>
     </main>
     <script>
       const labels = {
-        en: { title: 'ForgetProof · Conformance Matrix', heroAlt: 'A synthetic canary disappearing from a memory graph while an evidence ledger verifies the change', loading: 'Loading verified bundles…', empty: 'No verified public bundles have been submitted yet.', unavailable: 'Matrix data unavailable.', adapter: 'Adapter', backend: 'Backend', profile: 'Profile', status: 'Status', evidence: 'Evidence', bundle: 'bundle' },
-        zh: { title: 'ForgetProof · 认证矩阵', heroAlt: '合成 canary 从记忆图谱中消失，同时由证据账本确认变化', loading: '正在加载已验证的证据包……', empty: '暂时还没有公开提交的已验证证据包。', unavailable: '认证矩阵暂时不可用。', adapter: '适配器', backend: '后端', profile: '档案', status: '状态', evidence: '证据', bundle: '证据包' }
+        en: { title: 'ForgetProof · Conformance Matrix', description: 'ForgetProof proves whether an AI memory system really forgot.', heroAlt: 'A synthetic canary disappearing from a memory graph while an evidence ledger verifies the change', loading: 'Loading verified bundles…', empty: 'No verified public bundles have been submitted yet.', unavailable: 'Matrix data unavailable.', adapter: 'Adapter', backend: 'Backend', profile: 'Profile', status: 'Status', evidence: 'Evidence', bundle: 'bundle' },
+        zh: { title: 'ForgetProof · 认证矩阵', description: '用证据验证 AI 记忆系统是否真的遗忘。', heroAlt: '合成 canary 从记忆图谱中消失，同时由证据账本确认变化', loading: '正在加载已验证的证据包……', empty: '暂时还没有公开提交的已验证证据包。', unavailable: '认证矩阵暂时不可用。', adapter: '适配器', backend: '后端', profile: '档案', status: '状态', evidence: '证据', bundle: '证据包' }
       };
       let language = 'en';
       const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -143,6 +167,7 @@
         language = button.dataset.language;
         document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
         document.title = labels[language].title;
+        document.querySelector('meta[name="description"]').content = labels[language].description;
         document.querySelector('.hero-image').alt = labels[language].heroAlt;
         document.querySelectorAll('[data-language]').forEach(item => item.classList.toggle('active', item === button));
         document.querySelectorAll('.lang-en').forEach(item => item.style.display = language === 'en' ? '' : 'none');

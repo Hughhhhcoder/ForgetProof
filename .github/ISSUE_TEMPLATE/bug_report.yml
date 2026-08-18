@@ -1,0 +1,38 @@
+name: Bug report / 问题报告
+description: Report a reproducible problem / 报告一个可复现的问题
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please remove credentials and real user data before submitting.
+        提交前请删除凭据和真实用户数据。
+  - type: input
+    id: version
+    attributes:
+      label: ForgetProof version / 版本
+      placeholder: "0.1.0 or commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: backend
+    attributes:
+      label: Backend and version / 后端及版本
+      placeholder: "reference-clean, Mem0, Letta, or Zep"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction / 复现步骤
+      description: Include a minimal scenario or command. / 请提供最小场景或命令。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result / 预期与实际结果
+    validations:
+      required: true

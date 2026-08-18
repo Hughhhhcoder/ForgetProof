@@ -1,0 +1,24 @@
+name: Feature request / 功能建议
+description: Suggest a focused improvement / 提议一个明确的改进方向
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 要解决的问题
+      description: What becomes easier or safer? / 它会让什么变得更容易或更安全？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal / 建议方案
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Evidence boundary / 证据边界
+      description: What can be observed and what must remain UNKNOWN? / 哪些可以观察，哪些必须保持 UNKNOWN？

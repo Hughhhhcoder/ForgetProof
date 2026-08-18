@@ -14,9 +14,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets --all-features -- -D warnings
       - run: cargo test
       - run: python -m compileall -q python
       - run: PYTHONPATH=python python -m unittest discover -s python/tests -v
+      - name: Validate scenario schema JSON
+        run: python -m json.tool schemas/scenario.schema.json >/dev/null
       - name: Run passing reference scenario
         run: cargo run --quiet -- run examples/reference-clean.yml --output .forgetproof/runs
       - name: Verify evidence bundle
@@ -31,3 +34,10 @@ jobs:
           cargo run --quiet -- run examples/reference-leaky.yml --output .forgetproof/leaky-runs
           code=$?
           test "$code" -eq 1
+      - name: Upload evidence bundles
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forgetproof-evidence
+          path: .forgetproof/
+          if-no-files-found: ignore
