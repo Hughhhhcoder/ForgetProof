@@ -130,6 +130,22 @@ cargo run -- run examples/reference-leaky.yml
 
 它会以退出码 `1` 结束，因为原始记录虽然被删除，但衍生工件仍然可观察。报告会指出失败的探针和认证档案。
 
+### CLI 命令
+
+Rust 二进制提供了用于本地初始化、适配器检查、场景执行和证据校验的简洁命令集：
+
+| 命令 | 用途 |
+| --- | --- |
+| `init [path]` | 创建 ForgetProof 项目骨架和参考场景。 |
+| `adapters list` | 列出内置适配器和 Python 适配器。 |
+| `doctor --adapter <name>` | 在不修改后端的情况下检查适配器协议和能力。 |
+| `expand <input> --output <file>` | 冻结确定性的词法和语义探针变体。 |
+| `run <scenario>` | 执行场景并生成证据包。 |
+| `verify <bundle>` | 重新计算校验和并验证证据包完整性。 |
+| `report <bundle>` | 根据 `results.json` 重新生成 HTML 和 JUnit 报告。 |
+
+编写场景时可以从 [`examples/reference-clean.yml`](examples/reference-clean.yml) 开始，并用 [`schemas/scenario.schema.json`](schemas/scenario.schema.json) 对照字段结构。生产凭据应放在环境变量中；只有在明确授权访问非本机后端时，才使用 `--allow-network`。
+
 ## 🏅 认证档案
 
 | 档案 | 通俗解释 |

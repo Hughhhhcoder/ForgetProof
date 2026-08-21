@@ -130,6 +130,22 @@ cargo run -- run examples/reference-leaky.yml
 
 It exits `1` because the raw item is deleted while a derived artifact remains observable. The report identifies the failing probe and profile.
 
+### CLI commands
+
+The Rust binary exposes a small command surface for local setup, adapter inspection, scenario execution, and evidence verification:
+
+| Command | Purpose |
+| --- | --- |
+| `init [path]` | Create a starter ForgetProof project and reference scenarios. |
+| `adapters list` | List the built-in and Python adapters. |
+| `doctor --adapter <name>` | Inspect an adapter's protocol and capabilities without mutating a backend. |
+| `expand <input> --output <file>` | Freeze deterministic lexical and semantic probe variants. |
+| `run <scenario>` | Execute a scenario and write an evidence bundle. |
+| `verify <bundle>` | Recompute checksums and verify bundle integrity. |
+| `report <bundle>` | Regenerate the HTML and JUnit reports from `results.json`. |
+
+For scenario authoring, start with [`examples/reference-clean.yml`](examples/reference-clean.yml) and validate the shape against [`schemas/scenario.schema.json`](schemas/scenario.schema.json). Keep production credentials in environment variables; use `--allow-network` only when the scenario is explicitly authorized to reach a non-loopback backend.
+
 ## 🏅 Conformance profiles
 
 | Profile | Plain-English meaning |
