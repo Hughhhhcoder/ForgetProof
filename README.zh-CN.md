@@ -251,6 +251,10 @@ jobs:
 
 适配器协议方法包括 `hello`、`capabilities`、`prepare`、`ingest`、`settle`、`probe`、`erase`、`inspect`、`agent_query`、`cleanup` 和 `close`。stdout 只允许协议帧，适配器日志必须写 stderr。没有实现的能力必须报告 `SKIP` 或 `UNKNOWN`，不能伪造通过。
 
+### 带凭据的供应商测试
+
+仓库中的 `*-adapter-contract` 证据使用确定性的本地 mock。若要测试真实的 Mem0、Letta 或 Zep 部署，请使用可选的[带凭据供应商工作流](provider-conformance.zh-CN.md)。它从 GitHub Secrets 读取 API Key，强制使用 `--allow-network`，上传待审核 artifact，并且不会自动提交远程证据。
+
 ## 开发与贡献
 
 ```bash
@@ -268,6 +272,7 @@ PYTHONPATH=python python3 -m unittest discover -s python/tests -v
 
 - 🌐 [在线 Memory Assurance 矩阵](https://hughhhhcoder.github.io/MemoryProof/)
 - 🧪 [公开认证证据](conformance/README.zh-CN.md)
+- ☁️ [带凭据的供应商一致性测试](docs/provider-conformance.zh-CN.md) · [English](docs/provider-conformance.md)
 - 📐 [场景 Schema](schemas/scenario.schema.json)
 - 🏗️ [架构与信任边界](docs/architecture.zh-CN.md) · [English](docs/architecture.md)
 - 🧭 [English README](README.md)
@@ -276,6 +281,7 @@ PYTHONPATH=python python3 -m unittest discover -s python/tests -v
 - 📜 [变更记录](CHANGELOG.zh-CN.md)
 - 📦 [发行版](https://github.com/Hughhhhcoder/MemoryProof/releases)
 - 🐳 [GHCR 容器包](https://github.com/Hughhhhcoder/MemoryProof/pkgs/container/memoryproof)
+- 🚀 [发布运维说明](docs/release.zh-CN.md) · [English release guide](docs/release.md)
 
 ## 从 ForgetProof 迁移
 

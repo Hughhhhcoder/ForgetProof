@@ -1,0 +1,222 @@
+name: Provider conformance / 云端适配器一致性
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Provider to test / 要测试的供应商
+        required: true
+        type: choice
+        options:
+          - mem0
+          - letta
+          - zep
+          - all
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-conformance
+  cancel-in-progress: false
+
+jobs:
+  mem0:
+    name: Mem0 credentialed conformance
+    if: >-
+      (github.event_name == 'schedule' && vars.PROVIDER_CONFORMANCE_ENABLED == 'true') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.provider == 'mem0' || inputs.provider == 'all'))
+    runs-on: ubuntu-latest
+    env:
+      MEM0_API_KEY: ${{ secrets.MEM0_API_KEY }}
+      MEM0_BASE_URL: ${{ secrets.MEM0_BASE_URL || vars.MEM0_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Check credentials and freeze provider endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${MEM0_API_KEY:-}" || { echo "MEM0_API_KEY is not configured" >&2; exit 2; }
+          test -n "${MEM0_BASE_URL:-}" || { echo "MEM0_BASE_URL is not configured" >&2; exit 2; }
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          source = Path("examples/mem0.yml").read_text()
+          source = source.replace(
+              "base_url: http://localhost:8888",
+              "base_url: " + json.dumps(os.environ["MEM0_BASE_URL"]),
+              1,
+          )
+          Path("/tmp/mem0-provider.yml").write_text(source)
+          PY
+      - name: Doctor and run Mem0
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run --quiet -- doctor --adapter mem0 --mode oss \
+            --config "base_url=${MEM0_BASE_URL}" --allow-network
+          cargo run --quiet -- run /tmp/mem0-provider.yml \
+            --allow-network --output .memoryproof/provider/mem0
+          bundle=$(find .memoryproof/provider/mem0 -mindepth 1 -maxdepth 1 -type d -print -quit)
+          cargo run --quiet -- verify "$bundle"
+      - name: Check evidence for credentials
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+          secret = os.environ.get("MEM0_API_KEY", "")
+          if secret:
+              for path in Path(".memoryproof").rglob("*"):
+                  if path.is_file() and secret in path.read_text(errors="replace"):
+                      print("credential value found in evidence", file=sys.stderr)
+                      raise SystemExit(1)
+          PY
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: memoryproof-provider-mem0
+          path: .memoryproof/provider/mem0
+          if-no-files-found: ignore
+
+  letta:
+    name: Letta credentialed conformance
+    if: >-
+      (github.event_name == 'schedule' && vars.PROVIDER_CONFORMANCE_ENABLED == 'true') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.provider == 'letta' || inputs.provider == 'all'))
+    runs-on: ubuntu-latest
+    env:
+      LETTA_API_KEY: ${{ secrets.LETTA_API_KEY }}
+      LETTA_BASE_URL: ${{ secrets.LETTA_BASE_URL || vars.LETTA_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Check credentials and freeze provider endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${LETTA_API_KEY:-}" || { echo "LETTA_API_KEY is not configured" >&2; exit 2; }
+          test -n "${LETTA_BASE_URL:-}" || { echo "LETTA_BASE_URL is not configured" >&2; exit 2; }
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          source = Path("examples/letta.yml").read_text()
+          source = source.replace(
+              "base_url: http://localhost:8283",
+              "base_url: " + json.dumps(os.environ["LETTA_BASE_URL"]),
+              1,
+          )
+          Path("/tmp/letta-provider.yml").write_text(source)
+          PY
+      - name: Doctor and run Letta
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run --quiet -- doctor --adapter letta --mode self-hosted \
+            --config "base_url=${LETTA_BASE_URL}" --allow-network
+          cargo run --quiet -- run /tmp/letta-provider.yml \
+            --allow-network --output .memoryproof/provider/letta
+          bundle=$(find .memoryproof/provider/letta -mindepth 1 -maxdepth 1 -type d -print -quit)
+          cargo run --quiet -- verify "$bundle"
+      - name: Check evidence for credentials
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+          secret = os.environ.get("LETTA_API_KEY", "")
+          if secret:
+              for path in Path(".memoryproof").rglob("*"):
+                  if path.is_file() and secret in path.read_text(errors="replace"):
+                      print("credential value found in evidence", file=sys.stderr)
+                      raise SystemExit(1)
+          PY
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: memoryproof-provider-letta
+          path: .memoryproof/provider/letta
+          if-no-files-found: ignore
+
+  zep:
+    name: Zep credentialed conformance
+    if: >-
+      (github.event_name == 'schedule' && vars.PROVIDER_CONFORMANCE_ENABLED == 'true') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.provider == 'zep' || inputs.provider == 'all'))
+    runs-on: ubuntu-latest
+    env:
+      ZEP_API_KEY: ${{ secrets.ZEP_API_KEY }}
+      ZEP_BASE_URL: ${{ secrets.ZEP_BASE_URL || vars.ZEP_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Check credentials and freeze provider endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${ZEP_API_KEY:-}" || { echo "ZEP_API_KEY is not configured" >&2; exit 2; }
+          test -n "${ZEP_BASE_URL:-}" || { echo "ZEP_BASE_URL is not configured" >&2; exit 2; }
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          source = Path("examples/zep.yml").read_text()
+          source = source.replace(
+              "base_url: http://localhost:8000",
+              "base_url: " + json.dumps(os.environ["ZEP_BASE_URL"]),
+              1,
+          )
+          Path("/tmp/zep-provider.yml").write_text(source)
+          PY
+      - name: Doctor and run Zep
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run --quiet -- doctor --adapter zep --mode self-hosted \
+            --config "base_url=${ZEP_BASE_URL}" --allow-network
+          cargo run --quiet -- run /tmp/zep-provider.yml \
+            --allow-network --output .memoryproof/provider/zep
+          bundle=$(find .memoryproof/provider/zep -mindepth 1 -maxdepth 1 -type d -print -quit)
+          cargo run --quiet -- verify "$bundle"
+      - name: Check evidence for credentials
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+          secret = os.environ.get("ZEP_API_KEY", "")
+          if secret:
+              for path in Path(".memoryproof").rglob("*"):
+                  if path.is_file() and secret in path.read_text(errors="replace"):
+                      print("credential value found in evidence", file=sys.stderr)
+                      raise SystemExit(1)
+          PY
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: memoryproof-provider-zep
+          path: .memoryproof/provider/zep
+          if-no-files-found: ignore

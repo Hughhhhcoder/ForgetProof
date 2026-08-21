@@ -252,6 +252,10 @@ The stable scenario API is `memoryproof.dev/v1`. A scenario contains:
 
 The adapter protocol methods are `hello`, `capabilities`, `prepare`, `ingest`, `settle`, `probe`, `erase`, `inspect`, `agent_query`, `cleanup`, and `close`. stdout is reserved for protocol frames; adapter logs go to stderr. A capability that is not implemented must become `SKIP` or `UNKNOWN`, never a fabricated pass.
 
+### Credentialed provider runs
+
+The checked-in `*-adapter-contract` evidence uses deterministic local mocks. For a real Mem0, Letta, or Zep deployment, use the opt-in [credentialed provider workflow](provider-conformance.md). It reads API keys from GitHub Secrets, requires `--allow-network`, uploads a reviewed artifact, and never commits remote evidence automatically.
+
 ## Build and contribute
 
 ```bash
@@ -269,6 +273,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and 
 
 - 🌐 [Live Memory Assurance Matrix](https://hughhhhcoder.github.io/MemoryProof/)
 - 🧪 [Public conformance evidence](conformance/README.md)
+- ☁️ [Credentialed provider conformance](docs/provider-conformance.md) · [中文说明](docs/provider-conformance.zh-CN.md)
 - 📐 [Scenario schema](schemas/scenario.schema.json)
 - 🏗️ [Architecture and trust boundaries](docs/architecture.md) · [中文架构说明](docs/architecture.zh-CN.md)
 - 🧭 [中文说明](README.zh-CN.md)
@@ -277,6 +282,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and 
 - 📜 [Changelog](CHANGELOG.md)
 - 📦 [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases)
 - 🐳 [Container packages](https://github.com/Hughhhhcoder/MemoryProof/pkgs/container/memoryproof)
+- 🚀 [Release operations](docs/release.md) · [中文发布说明](docs/release.zh-CN.md)
 
 ## Migration from ForgetProof
 
