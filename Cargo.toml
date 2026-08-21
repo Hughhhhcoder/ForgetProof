@@ -3,10 +3,12 @@ members = ["crates/forgetproof"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/Hughhhhcoder/ForgetProof"
+repository = "https://github.com/Hughhhhcoder/MemoryProof"
+homepage = "https://hughhhhcoder.github.io/MemoryProof/"
+description = "Test what your AI remembers. Prove what it forgot."
 
 [workspace.dependencies]
 anyhow = "1.0"

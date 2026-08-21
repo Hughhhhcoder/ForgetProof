@@ -1,5 +1,6 @@
 /target/
 /.forgetproof/
+/.memoryproof/
 __pycache__/
 *.py[cod]
 .venv/

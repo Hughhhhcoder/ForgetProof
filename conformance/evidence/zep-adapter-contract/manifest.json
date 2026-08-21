@@ -1,0 +1,18 @@
+{
+  "format": "memoryproof.bundle/v1",
+  "run_id": "run-1787321627919-79681",
+  "created_at_ms": 1787321631604,
+  "scenario_hash": "454c8931d265e9eb7d1705249091c31c1343869d930bb643b3ffec38a27bfb1b",
+  "adapter": "zep",
+  "backend": "zep",
+  "protocol": "memoryproof.adapter/v1",
+  "files": [
+    "manifest.json",
+    "scenario.lock.json",
+    "events.ndjson",
+    "results.json",
+    "report.html",
+    "junit.xml"
+  ],
+  "bundle_hash": ""
+}

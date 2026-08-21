@@ -1,0 +1,133 @@
+{
+  "run_id": "run-1787321627919-79681",
+  "suite": "erasure",
+  "scenario": "zep-erasure",
+  "adapter": "zep",
+  "backend": "zep",
+  "backend_version": "configured",
+  "protocol": "memoryproof.adapter/v1",
+  "scenario_hash": "454c8931d265e9eb7d1705249091c31c1343869d930bb643b3ffec38a27bfb1b",
+  "status": "PASS",
+  "exit_code": 0,
+  "profiles": [
+    {
+      "profile": "erasure.object",
+      "label": "MemoryProof · Erasure · Object",
+      "status": "PASS",
+      "assertions": [
+        "before.target-before",
+        "before.control-before",
+        "after.target-after",
+        "after.control-after"
+      ]
+    },
+    {
+      "profile": "erasure.scope",
+      "label": "MemoryProof · Erasure · Scope",
+      "status": "PASS",
+      "assertions": [
+        "scope.control-after"
+      ]
+    },
+    {
+      "profile": "erasure.derived",
+      "label": "MemoryProof · Erasure · Derived",
+      "status": "PASS",
+      "assertions": [
+        "after.target-derived-after"
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "before.target-before",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic canary 'target' was observable before the erase operation",
+      "expected": true,
+      "observed": true,
+      "artifact": "semantic",
+      "evidence": [
+        "probe:target-before"
+      ]
+    },
+    {
+      "id": "before.control-before",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic canary 'control' was observable before the erase operation",
+      "expected": true,
+      "observed": true,
+      "artifact": "semantic",
+      "evidence": [
+        "probe:control-before"
+      ]
+    },
+    {
+      "id": "after.target-after",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic probe for fixture 'target' expected absent, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "semantic-index",
+      "evidence": [
+        "probe:target-after"
+      ]
+    },
+    {
+      "id": "after.control-after",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic probe for fixture 'control' expected present, observed present",
+      "expected": true,
+      "observed": true,
+      "artifact": "semantic-index",
+      "evidence": [
+        "probe:control-after"
+      ]
+    },
+    {
+      "id": "scope.control-after",
+      "profile": "erasure.scope",
+      "status": "PASS",
+      "message": "control fixture 'control' remained observable after target erase",
+      "expected": true,
+      "observed": true,
+      "artifact": "scope",
+      "evidence": [
+        "probe:control-after"
+      ]
+    },
+    {
+      "id": "after.target-derived-after",
+      "profile": "erasure.derived",
+      "status": "PASS",
+      "message": "inspect probe for fixture 'target' expected absent, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "derived",
+      "evidence": [
+        "probe:target-derived-after"
+      ]
+    }
+  ],
+  "capabilities": [
+    "object_delete",
+    "scope_delete",
+    "probe",
+    "lexical_search",
+    "semantic_search",
+    "inspect",
+    "derived_inspect",
+    "async_settle",
+    "isolated_namespace"
+  ],
+  "out_of_scope": [
+    "provider logs and backups",
+    "physical storage erasure",
+    "model-weight unlearning",
+    "unobservable artifacts outside the adapter boundary"
+  ],
+  "warnings": []
+}

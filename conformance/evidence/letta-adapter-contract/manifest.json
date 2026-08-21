@@ -1,0 +1,18 @@
+{
+  "format": "memoryproof.bundle/v1",
+  "run_id": "run-1787321620648-79664",
+  "created_at_ms": 1787321624245,
+  "scenario_hash": "f9a37596cbb8ce787eb02dede4561cd8e14b831187fa938abc2746cc5a647cbe",
+  "adapter": "letta",
+  "backend": "letta",
+  "protocol": "memoryproof.adapter/v1",
+  "files": [
+    "manifest.json",
+    "scenario.lock.json",
+    "events.ndjson",
+    "results.json",
+    "report.html",
+    "junit.xml"
+  ],
+  "bundle_hash": ""
+}

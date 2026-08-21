@@ -1,23 +1,75 @@
-name: ForgetProof
+name: MemoryProof
 author: Hughhhhcoder
-description: Evidence-driven tests that prove AI memory was forgotten / 用证据验证 AI 记忆是否真的被遗忘。
+description: Test what your AI remembers and prove what it forgot / 测试 AI 记住了什么，并证明它忘记了什么。
 inputs:
   scenario:
-    description: Path to a ForgetProof scenario relative to the repository / 相对于仓库根目录的 ForgetProof 场景路径。
+    description: Path to a MemoryProof scenario relative to the repository / 相对于仓库根目录的 MemoryProof 场景路径。
     required: true
   allow-network:
     description: Explicitly allow calls to non-loopback backends / 显式允许访问非本机后端。
     required: false
     default: "false"
+  output:
+    description: Evidence output directory relative to the repository / 相对于仓库根目录的证据输出目录。
+    required: false
+    default: ".memoryproof/runs"
+outputs:
+  bundle-path:
+    description: Path to the generated evidence bundle / 生成的证据包路径。
+    value: ${{ steps.run.outputs.bundle-path }}
+  exit-code:
+    description: MemoryProof exit code / MemoryProof 退出码。
+    value: ${{ steps.run.outputs.exit-code }}
 runs:
-  using: docker
-  image: Dockerfile
-  args:
-    - run
-    - /github/workspace/${{ inputs.scenario }}
-    - --output
-    - /github/workspace/.forgetproof/runs
-    - --allow-network=${{ inputs.allow-network }}
+  using: composite
+  steps:
+    - id: run
+      name: Run MemoryProof
+      shell: bash
+      env:
+        MEMORYPROOF_SCENARIO: ${{ inputs.scenario }}
+        MEMORYPROOF_ALLOW_NETWORK: ${{ inputs.allow-network }}
+        MEMORYPROOF_OUTPUT: ${{ inputs.output }}
+      run: |
+        set +e
+        mkdir -p "$GITHUB_WORKSPACE/$MEMORYPROOF_OUTPUT"
+        docker run --rm \
+          --user "$(id -u):$(id -g)" \
+          -v "$GITHUB_WORKSPACE:/workspace" \
+          ghcr.io/hughhhhcoder/memoryproof:1 \
+          run "/workspace/$MEMORYPROOF_SCENARIO" \
+          --output "/workspace/$MEMORYPROOF_OUTPUT" \
+          --allow-network="$MEMORYPROOF_ALLOW_NETWORK"
+        code=$?
+        bundle=$(find "$GITHUB_WORKSPACE/$MEMORYPROOF_OUTPUT" -mindepth 1 -maxdepth 1 -type d -print -quit)
+        echo "bundle-path=${bundle#"$GITHUB_WORKSPACE/"}" >> "$GITHUB_OUTPUT"
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        exit 0
+    - name: Upload evidence bundle
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: memoryproof-evidence
+        path: ${{ inputs.output }}
+        if-no-files-found: ignore
+    - name: Publish summary
+      if: always()
+      shell: bash
+      run: |
+        echo "## MemoryProof" >> "$GITHUB_STEP_SUMMARY"
+        echo "- Scenario: \`${{ inputs.scenario }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "- Bundle: \`${{ steps.run.outputs.bundle-path }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "- Exit code: \`${{ steps.run.outputs.exit-code }}\`" >> "$GITHUB_STEP_SUMMARY"
+    - name: Enforce MemoryProof result
+      if: always()
+      shell: bash
+      run: |
+        code="${{ steps.run.outputs.exit-code }}"
+        if [ -z "$code" ]; then
+          echo "MemoryProof did not produce an exit code" >&2
+          exit 2
+        fi
+        exit "$code"
 branding:
   icon: shield
   color: purple

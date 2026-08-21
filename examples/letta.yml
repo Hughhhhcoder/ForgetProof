@@ -1,23 +1,28 @@
-apiVersion: forgetproof.dev/v1alpha1
-kind: ErasureScenario
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
 metadata:
   name: letta-erasure
-  description: Letta archival passage and Agent erasure with a temporary Agent.
+  description: Letta archival passage and Agent erasure with owned temporary Agents.
 spec:
+  suite: erasure
   adapter:
     name: letta
-    mode: default
+    mode: self-hosted
     config:
       base_url: http://localhost:8283
   isolation:
-    scope: run
+    scope: memoryproof-run
+    target_subject: target-subject
+    control_subject: control-subject
   fixtures:
     - id: target
-      content: "ForgetProof Letta canary target 31a9e2"
-      target: true
+      role: target
+      subject: target-subject
+      content: "MemoryProof Letta canary target 31a9e2"
     - id: control
-      content: "ForgetProof Letta control 8c2d10"
-      target: false
+      role: control
+      subject: control-subject
+      content: "MemoryProof Letta control 8c2d10"
   settle:
     timeout_ms: 30000
     interval_ms: 1000
@@ -45,4 +50,8 @@ spec:
       - id: target-agent-after
         fixture: target
         kind: agent
-  profiles: [FP-Object, FP-Scope, FP-Derived, FP-Agent]
+  profiles:
+    - erasure.object
+    - erasure.scope
+    - erasure.derived
+    - erasure.agent

@@ -1,0 +1,47 @@
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
+metadata:
+  name: reference-overdelete
+  description: A deliberately unsafe backend deletes the control subject too.
+spec:
+  suite: erasure
+  adapter:
+    name: reference-overdelete
+    mode: overdelete
+  isolation:
+    scope: memoryproof-run
+    target_subject: target-subject
+    control_subject: control-subject
+  fixtures:
+    - id: target
+      role: target
+      subject: target-subject
+      content: "MemoryProof overdelete target 5f1e8c"
+    - id: control
+      role: control
+      subject: control-subject
+      content: "MemoryProof overdelete control 0b4d72"
+  settle:
+    timeout_ms: 5000
+    interval_ms: 25
+  erase:
+    intent: subject_erase
+    target: target
+  probes:
+    before:
+      - id: target-before
+        fixture: target
+        kind: exact
+      - id: control-before
+        fixture: control
+        kind: exact
+    after:
+      - id: target-after
+        fixture: target
+        kind: exact
+      - id: control-after
+        fixture: control
+        kind: exact
+  profiles:
+    - erasure.object
+    - erasure.scope

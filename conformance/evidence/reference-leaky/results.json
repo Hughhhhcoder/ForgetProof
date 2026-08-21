@@ -1,0 +1,155 @@
+{
+  "run_id": "run-1787321604334-79610",
+  "suite": "erasure",
+  "scenario": "reference-leaky",
+  "adapter": "reference-leaky",
+  "backend": "memoryproof-reference",
+  "backend_version": "1.0.0",
+  "protocol": "memoryproof.adapter/v1",
+  "scenario_hash": "1a1ebd045054ba001f87b2592698dd654151edd31e718e3eed62b18fee4d8af1",
+  "status": "FAIL",
+  "exit_code": 1,
+  "profiles": [
+    {
+      "profile": "erasure.object",
+      "label": "MemoryProof · Erasure · Object",
+      "status": "PASS",
+      "assertions": [
+        "before.target-before",
+        "before.control-before",
+        "after.target-after",
+        "after.control-after"
+      ]
+    },
+    {
+      "profile": "erasure.scope",
+      "label": "MemoryProof · Erasure · Scope",
+      "status": "PASS",
+      "assertions": [
+        "scope.control-after"
+      ]
+    },
+    {
+      "profile": "erasure.derived",
+      "label": "MemoryProof · Erasure · Derived",
+      "status": "FAIL",
+      "assertions": [
+        "after.target-derived-after"
+      ]
+    },
+    {
+      "profile": "erasure.agent",
+      "label": "MemoryProof · Erasure · Agent",
+      "status": "FAIL",
+      "assertions": [
+        "after.target-agent-after"
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "before.target-before",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "exact canary 'target' was observable before the erase operation",
+      "expected": true,
+      "observed": true,
+      "artifact": "exact",
+      "evidence": [
+        "probe:target-before"
+      ]
+    },
+    {
+      "id": "before.control-before",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "exact canary 'control' was observable before the erase operation",
+      "expected": true,
+      "observed": true,
+      "artifact": "exact",
+      "evidence": [
+        "probe:control-before"
+      ]
+    },
+    {
+      "id": "after.target-after",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "exact probe for fixture 'target' expected absent, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "object",
+      "evidence": [
+        "probe:target-after"
+      ]
+    },
+    {
+      "id": "after.control-after",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "exact probe for fixture 'control' expected present, observed present",
+      "expected": true,
+      "observed": true,
+      "artifact": "object",
+      "evidence": [
+        "probe:control-after"
+      ]
+    },
+    {
+      "id": "scope.control-after",
+      "profile": "erasure.scope",
+      "status": "PASS",
+      "message": "control fixture 'control' remained observable after target erase",
+      "expected": true,
+      "observed": true,
+      "artifact": "scope",
+      "evidence": [
+        "probe:control-after"
+      ]
+    },
+    {
+      "id": "after.target-derived-after",
+      "profile": "erasure.derived",
+      "status": "FAIL",
+      "message": "inspect probe for fixture 'target' expected absent, observed present",
+      "expected": false,
+      "observed": true,
+      "artifact": "derived",
+      "evidence": [
+        "probe:target-derived-after"
+      ]
+    },
+    {
+      "id": "after.target-agent-after",
+      "profile": "erasure.agent",
+      "status": "FAIL",
+      "message": "agent probe for fixture 'target' expected absent, observed present",
+      "expected": false,
+      "observed": true,
+      "artifact": "agent",
+      "evidence": [
+        "probe:target-agent-after"
+      ]
+    }
+  ],
+  "capabilities": [
+    "object_delete",
+    "scope_delete",
+    "probe",
+    "lexical_search",
+    "semantic_search",
+    "inspect",
+    "derived_inspect",
+    "derived_delete",
+    "agent_query",
+    "async_settle",
+    "isolated_namespace"
+  ],
+  "out_of_scope": [
+    "provider logs and backups",
+    "physical storage erasure",
+    "model-weight unlearning",
+    "unobservable artifacts outside the adapter boundary"
+  ],
+  "warnings": []
+}

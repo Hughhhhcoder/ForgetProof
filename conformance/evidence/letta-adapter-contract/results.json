@@ -1,0 +1,154 @@
+{
+  "run_id": "run-1787321620648-79664",
+  "suite": "erasure",
+  "scenario": "letta-erasure",
+  "adapter": "letta",
+  "backend": "letta",
+  "backend_version": "configured",
+  "protocol": "memoryproof.adapter/v1",
+  "scenario_hash": "f9a37596cbb8ce787eb02dede4561cd8e14b831187fa938abc2746cc5a647cbe",
+  "status": "PASS",
+  "exit_code": 0,
+  "profiles": [
+    {
+      "profile": "erasure.object",
+      "label": "MemoryProof · Erasure · Object",
+      "status": "PASS",
+      "assertions": [
+        "before.target-before",
+        "before.control-before",
+        "after.target-after",
+        "after.control-after"
+      ]
+    },
+    {
+      "profile": "erasure.scope",
+      "label": "MemoryProof · Erasure · Scope",
+      "status": "PASS",
+      "assertions": [
+        "scope.control-after"
+      ]
+    },
+    {
+      "profile": "erasure.derived",
+      "label": "MemoryProof · Erasure · Derived",
+      "status": "PASS",
+      "assertions": [
+        "after.target-derived-after"
+      ]
+    },
+    {
+      "profile": "erasure.agent",
+      "label": "MemoryProof · Erasure · Agent",
+      "status": "PASS",
+      "assertions": [
+        "after.target-agent-after"
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "before.target-before",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic canary 'target' was observable before the erase operation",
+      "expected": true,
+      "observed": true,
+      "artifact": "semantic",
+      "evidence": [
+        "probe:target-before"
+      ]
+    },
+    {
+      "id": "before.control-before",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic canary 'control' was observable before the erase operation",
+      "expected": true,
+      "observed": true,
+      "artifact": "semantic",
+      "evidence": [
+        "probe:control-before"
+      ]
+    },
+    {
+      "id": "after.target-after",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic probe for fixture 'target' expected absent, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "semantic-index",
+      "evidence": [
+        "probe:target-after"
+      ]
+    },
+    {
+      "id": "after.control-after",
+      "profile": "erasure.object",
+      "status": "PASS",
+      "message": "semantic probe for fixture 'control' expected present, observed present",
+      "expected": true,
+      "observed": true,
+      "artifact": "semantic-index",
+      "evidence": [
+        "probe:control-after"
+      ]
+    },
+    {
+      "id": "scope.control-after",
+      "profile": "erasure.scope",
+      "status": "PASS",
+      "message": "control fixture 'control' remained observable after target erase",
+      "expected": true,
+      "observed": true,
+      "artifact": "scope",
+      "evidence": [
+        "probe:control-after"
+      ]
+    },
+    {
+      "id": "after.target-derived-after",
+      "profile": "erasure.derived",
+      "status": "PASS",
+      "message": "inspect probe for fixture 'target' expected absent, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "derived",
+      "evidence": [
+        "probe:target-derived-after"
+      ]
+    },
+    {
+      "id": "after.target-agent-after",
+      "profile": "erasure.agent",
+      "status": "PASS",
+      "message": "agent probe for fixture 'target' expected absent, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "agent",
+      "evidence": [
+        "probe:target-agent-after"
+      ]
+    }
+  ],
+  "capabilities": [
+    "object_delete",
+    "scope_delete",
+    "probe",
+    "lexical_search",
+    "semantic_search",
+    "inspect",
+    "derived_inspect",
+    "agent_query",
+    "async_settle",
+    "isolated_namespace"
+  ],
+  "out_of_scope": [
+    "provider logs and backups",
+    "physical storage erasure",
+    "model-weight unlearning",
+    "unobservable artifacts outside the adapter boundary"
+  ],
+  "warnings": []
+}

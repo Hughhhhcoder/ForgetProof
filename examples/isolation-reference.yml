@@ -1,0 +1,58 @@
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
+metadata:
+  name: isolation-reference
+  description: Two subjects must not be able to observe one another's canaries.
+spec:
+  suite: isolation
+  adapter:
+    name: reference-clean
+    mode: clean
+  isolation:
+    scope: memoryproof-run
+    target_subject: target-subject
+    control_subject: control-subject
+  fixtures:
+    - id: target
+      role: target
+      subject: target-subject
+      content: "MemoryProof isolation target 4a7d91"
+    - id: control
+      role: control
+      subject: control-subject
+      content: "MemoryProof isolation control 9c2b60"
+  settle:
+    timeout_ms: 5000
+    interval_ms: 25
+  probes:
+    before:
+      - id: target-from-target
+        fixture: target
+        as_subject: target-subject
+        kind: exact
+      - id: target-from-control
+        fixture: target
+        as_subject: control-subject
+        kind: exact
+      - id: control-from-control
+        fixture: control
+        as_subject: control-subject
+        kind: exact
+      - id: control-from-target
+        fixture: control
+        as_subject: target-subject
+        kind: exact
+    after:
+      - id: target-search-from-control
+        fixture: target
+        as_subject: control-subject
+        kind: semantic
+      - id: control-search-from-target
+        fixture: control
+        as_subject: target-subject
+        kind: semantic
+  profiles:
+    - isolation.read
+    - isolation.search
+  privacy:
+    raw_payloads: false

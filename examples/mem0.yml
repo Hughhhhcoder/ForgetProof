@@ -1,23 +1,28 @@
-apiVersion: forgetproof.dev/v1alpha1
-kind: ErasureScenario
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
 metadata:
   name: mem0-erasure
-  description: Mem0 OSS or platform memory deletion with isolated user_id.
+  description: Mem0 deletion with separate target and control users.
 spec:
+  suite: erasure
   adapter:
     name: mem0
     mode: oss
     config:
       base_url: http://localhost:8888
   isolation:
-    scope: run
+    scope: memoryproof-run
+    target_subject: target-subject
+    control_subject: control-subject
   fixtures:
     - id: target
-      content: "ForgetProof Mem0 canary target 31a9e2"
-      target: true
+      role: target
+      subject: target-subject
+      content: "MemoryProof Mem0 canary target 31a9e2"
     - id: control
-      content: "ForgetProof Mem0 control 8c2d10"
-      target: false
+      role: control
+      subject: control-subject
+      content: "MemoryProof Mem0 control 8c2d10"
   settle:
     timeout_ms: 30000
     interval_ms: 1000
@@ -42,4 +47,7 @@ spec:
       - id: target-derived-after
         fixture: target
         kind: inspect
-  profiles: [FP-Object, FP-Scope, FP-Derived]
+  profiles:
+    - erasure.object
+    - erasure.scope
+    - erasure.derived

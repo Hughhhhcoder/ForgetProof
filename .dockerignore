@@ -1,9 +1,10 @@
 .git
 .github
-target
+.memoryproof
 .forgetproof
-__pycache__
-*.pyc
-.venv
+target
 dist
 build
+*.pyc
+__pycache__
+conformance/evidence

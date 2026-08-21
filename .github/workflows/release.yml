@@ -1,4 +1,4 @@
-name: Release / 发布
+name: Release MemoryProof / 发布 MemoryProof
 
 on:
   push:
@@ -9,69 +9,84 @@ permissions:
 
 jobs:
   binaries:
-    name: Build ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.name }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            archive: forgetproof-linux-x86_64
-            binary: target/release/forgetproof
-          - os: macos-latest
-            archive: forgetproof-macos-arm64
-            binary: target/release/forgetproof
+            name: linux-x86_64
+            archive: memoryproof-linux-x86_64.tar.gz
+            shell: bash
+          - os: macos-13
+            name: macos-x86_64
+            archive: memoryproof-macos-x86_64.tar.gz
+            shell: bash
+          - os: macos-14
+            name: macos-arm64
+            archive: memoryproof-macos-arm64.tar.gz
+            shell: bash
           - os: windows-latest
-            archive: forgetproof-windows-x86_64
-            binary: target/release/forgetproof.exe
+            name: windows-x86_64
+            archive: memoryproof-windows-x86_64.zip
+            shell: pwsh
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build --release
-      - name: Package Unix binary
+      - run: cargo build --release --bins
+      - name: Package Unix binaries
         if: runner.os != 'Windows'
-        run: tar -czf ${{ matrix.archive }}.tar.gz -C target/release forgetproof
-      - name: Package Windows binary
+        run: tar -czf "${{ matrix.archive }}" -C target/release memoryproof forgetproof
+      - name: Package Windows binaries
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path target/release/forgetproof.exe -DestinationPath ${{ matrix.archive }}.zip
+        run: Compress-Archive -Path target/release/memoryproof.exe,target/release/forgetproof.exe -DestinationPath "${{ matrix.archive }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.archive }}
-          path: |
-            ${{ matrix.archive }}.tar.gz
-            ${{ matrix.archive }}.zip
+          name: binary-${{ matrix.name }}
+          path: ${{ matrix.archive }}
+
   python:
+    name: Build Python distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - run: python -m pip install --upgrade build
       - run: python -m build
       - uses: actions/upload-artifact@v4
         with:
-          name: forgetproof-adapters-python
+          name: python-package
           path: dist/
-  publish:
-    name: Publish GitHub release
+
+  release:
+    name: Create GitHub release
     needs: [binaries, python]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: forgetproof-*
+          pattern: binary-*
           merge-multiple: true
-      - name: Create release and attach artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist
+      - name: Create or update release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            --repo "${GITHUB_REPOSITORY}" \
-            --title "ForgetProof ${GITHUB_REF_NAME}" \
-            --generate-notes \
-            dist/*
+          if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" dist/* --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+              --title "MemoryProof ${GITHUB_REF_NAME}" --generate-notes dist/*
+          fi
+
   container:
     name: Publish OCI image
     runs-on: ubuntu-latest
@@ -79,18 +94,43 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push image
+      - name: Build and push multi-architecture image
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/hughhhhcoder/forgetproof:${{ github.ref_name }}
-            ghcr.io/hughhhhcoder/forgetproof:latest
+            ghcr.io/hughhhhcoder/memoryproof:${{ github.ref_name }}
+            ghcr.io/hughhhhcoder/memoryproof:1
+            ghcr.io/hughhhhcoder/memoryproof:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/Hughhhhcoder/MemoryProof
+            org.opencontainers.image.description=Evidence-driven memory assurance for AI agents
+          provenance: mode=max
+          sbom: true
+
+  publish-pypi:
+    name: Publish PyPI package (opt-in)
+    if: vars.PUBLISH_PYPI == 'true' && startsWith(github.ref, 'refs/tags/v')
+    needs: python
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/memoryproof-adapters
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

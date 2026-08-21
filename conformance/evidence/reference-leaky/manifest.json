@@ -1,0 +1,18 @@
+{
+  "format": "memoryproof.bundle/v1",
+  "run_id": "run-1787321604334-79610",
+  "created_at_ms": 1787321604378,
+  "scenario_hash": "1a1ebd045054ba001f87b2592698dd654151edd31e718e3eed62b18fee4d8af1",
+  "adapter": "reference-leaky",
+  "backend": "memoryproof-reference",
+  "protocol": "memoryproof.adapter/v1",
+  "files": [
+    "manifest.json",
+    "scenario.lock.json",
+    "events.ndjson",
+    "results.json",
+    "report.html",
+    "junit.xml"
+  ],
+  "bundle_hash": ""
+}
