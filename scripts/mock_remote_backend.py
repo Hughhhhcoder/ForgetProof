@@ -24,6 +24,7 @@ class State:
         self.counter = 0
         self.records: dict[str, dict] = {}
         self.agents: dict[str, dict] = {}
+        self.blocks: dict[str, dict] = {}
         self.users: dict[str, dict] = {}
         self.threads: dict[str, dict] = {}
 
@@ -145,9 +146,22 @@ class Handler(BaseHTTPRequestHandler):
         return {"results": [{"id": item_id, "memory": item["content"], "user_id": user} for item_id, item in self.state.records.items() if item.get("user_id") == user and _contains(query, item["content"])]}
 
     def letta_post(self, path: str, body: dict) -> None:
+        if path in {"/v1/blocks", "/v1/blocks/"}:
+            block_id = self.state.new_id("block")
+            self.state.blocks[block_id] = {
+                "id": block_id,
+                "value": str(body.get("value", "")),
+                "deleted": False,
+            }
+            self.send_json(self.state.blocks[block_id])
+            return
         if path == "/v1/agents":
             agent_id = self.state.new_id("agent")
-            self.state.agents[agent_id] = {"deleted": False, "records": {}}
+            self.state.agents[agent_id] = {
+                "deleted": False,
+                "records": {},
+                "block_ids": list(body.get("block_ids") or []),
+            }
             self.send_json({"id": agent_id})
             return
         match = re.fullmatch(r"/v1/agents/([^/]+)/archival-memory", path)
@@ -161,11 +175,25 @@ class Handler(BaseHTTPRequestHandler):
         if match:
             agent = self.state.agents.get(match.group(1), {"deleted": True, "records": {}})
             texts = list(agent.get("records", {}).values()) if not agent.get("deleted") else []
+            if not agent.get("deleted"):
+                texts.extend(
+                    self.state.blocks[block_id]["value"]
+                    for block_id in agent.get("block_ids", [])
+                    if block_id in self.state.blocks and not self.state.blocks[block_id].get("deleted")
+                )
             self.send_json({"messages": [{"role": "assistant", "content": text} for text in texts]})
             return
         self.send_json({"ok": True})
 
     def letta_get(self, path: str, query: dict[str, list[str]]) -> None:
+        match = re.fullmatch(r"/v1/blocks/([^/]+)", path)
+        if match:
+            block = self.state.blocks.get(match.group(1))
+            if block is None or block.get("deleted"):
+                self.send_json({"error": "not found"}, status=404)
+            else:
+                self.send_json(block)
+            return
         match = re.fullmatch(r"/v1/agents/([^/]+)/archival-memory/search", path)
         if match:
             agent = self.state.agents.get(match.group(1), {"deleted": True, "records": {}})
@@ -180,6 +208,15 @@ class Handler(BaseHTTPRequestHandler):
         self.send_json({"results": []})
 
     def letta_delete(self, path: str) -> None:
+        match = re.fullmatch(r"/v1/blocks/([^/]+)", path)
+        if match:
+            block = self.state.blocks.get(match.group(1))
+            if block is None or block.get("deleted"):
+                self.send_json({"error": "not found"}, status=404)
+            else:
+                block["deleted"] = True
+                self.send_json({"deleted": True})
+            return
         match = re.fullmatch(r"/v1/agents/([^/]+)(?:/archival-memory/([^/]+))?", path)
         if match:
             agent = self.state.agents.get(match.group(1))

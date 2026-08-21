@@ -21,7 +21,7 @@ sequenceDiagram
     R->>A: settle + 删除前探针
     R->>A: 删除或隔离探针
     R->>A: settle + 删除后探针
-    R->>A: 清理自有资源
+    R->>A: 清理自有资源（失败时也尝试）
     R->>E: 结果、报告、JUnit、SHA-256 清单
 ```
 
@@ -30,8 +30,8 @@ sequenceDiagram
 | 边界 | 负责者 | 规则 |
 | --- | --- | --- |
 | 场景与断言引擎 | Rust | LLM 输出不能参与最终判定。 |
-| 适配器进程 | Python | stdout 只允许协议帧，stderr 只写诊断日志。 |
-| 供应商 API | 适配器 | 凭据来自环境变量，可以记录请求 ID，但不能记录密钥。 |
+| 适配器进程 | Python | stdout 只允许协议帧，stderr 只写诊断日志；清理必须带所有权范围。 |
+| 供应商 API | 适配器 | 凭据来自环境变量，可以记录安全的请求 ID，但不能记录密钥。 |
 | 证据包 | Rust 文件系统 | 校验路径，并在写 bundle hash 前排序哈希清单。 |
 | 公开矩阵 | CI + 审阅后的证据包 | 证据包必须先通过 verify，才能进入索引。 |
 
@@ -48,6 +48,10 @@ sequenceDiagram
 ```
 
 响应 ID 必须匹配。进程崩溃、超时、畸形 JSON、协议不匹配或不支持的方法都会变成标准错误；后端没有的能力会变为 `SKIP` 或 `UNKNOWN`，绝不会伪造 `PASS`。
+
+Rust 运行器会在发送 `prepare` 前就启动带所有权范围的清理保护。如果供应商调用、协议帧或子进程在运行中途失败，终止子进程前还会向适配器发送最后一次 `cleanup`。远程 endpoint 覆盖项也必须遵守与 `base_url` 相同的显式网络授权。
+
+官方适配器会诚实区分可观察边界：Mem0 检查当前配置的记忆/实体路径，Letta 同时检查 archival passage 和临时 core-memory block，Zep 检查 episode 搜索和配置的 user graph。接口不可用时保持 `UNKNOWN`，不会静默当成空存储。
 
 ## 为什么需要控制 fixture
 

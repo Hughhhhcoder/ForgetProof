@@ -84,10 +84,23 @@ class AdapterServer:
                     "ok": False,
                     "error": {"code": "internal_error", "message": str(exc)},
                 }
+            response = self.finalize_response(response, request)
             sys.stdout.write(json.dumps(response, separators=(",", ":")) + "\n")
             sys.stdout.flush()
             if self.closed:
                 break
+
+    def finalize_response(
+        self, response: dict[str, Any], request: dict[str, Any] | None
+    ) -> dict[str, Any]:
+        """Allow deterministic contract fixtures to mutate a response.
+
+        Production adapters use the default identity implementation. The hook
+        keeps protocol-failure fixtures inside the registered adapter boundary
+        so tests never need to execute an arbitrary command from a scenario.
+        """
+
+        return response
 
     def dispatch(self, request: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(request, dict):

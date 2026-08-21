@@ -4,7 +4,7 @@ use crate::model::{
     profile_for_probe, Assertion, Capabilities, Event, Fixture, Manifest, Probe, ProfileResult,
     RunResult, Scenario, BUNDLE_FORMAT, PROTOCOL_VERSION,
 };
-use crate::protocol::AdapterClient;
+use crate::protocol::{AdapterClient, AdapterSession};
 use anyhow::{anyhow, bail, Context, Result};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
@@ -62,10 +62,11 @@ pub fn run_scenario(
     let mut events = Vec::new();
     let mut warnings = Vec::new();
     let mut assertions = Vec::new();
-    let mut client = AdapterClient::spawn(
+    let mut client = AdapterSession::spawn(
         &scenario.spec.adapter.name,
         &scenario.spec.adapter.mode,
         &scenario.spec.adapter.config,
+        &run_id,
     )?;
 
     client.hello(call_timeout)?;
@@ -382,17 +383,27 @@ pub fn run_scenario(
         }
     }
 
-    if let Err(error) = client.call("cleanup", json!({ "run_id": run_id }), call_timeout) {
-        warnings.push(format!("cleanup failed: {error:#}"));
-        record_event(
-            &mut events,
-            "cleanup",
-            "cleanup",
-            "ERROR",
-            details([(String::from("error"), "cleanup failed".to_owned())]),
-        );
-    } else {
-        record_event(&mut events, "cleanup", "cleanup", "PASS", BTreeMap::new());
+    match client.call("cleanup", json!({ "run_id": run_id }), call_timeout) {
+        Ok(value) => {
+            record_event(
+                &mut events,
+                "cleanup",
+                "cleanup",
+                "PASS",
+                response_details(&value),
+            );
+            client.mark_cleaned();
+        }
+        Err(error) => {
+            warnings.push(format!("cleanup failed: {error:#}"));
+            record_event(
+                &mut events,
+                "cleanup",
+                "cleanup",
+                "ERROR",
+                details([(String::from("error"), "cleanup failed".to_owned())]),
+            );
+        }
     }
     client.close();
 
@@ -413,6 +424,7 @@ pub fn run_scenario(
         suite: scenario.spec.suite.clone(),
         scenario: scenario.metadata.name.clone(),
         adapter: scenario.spec.adapter.name.clone(),
+        adapter_mode: scenario.spec.adapter.mode.clone(),
         backend: if capabilities.backend.is_empty() {
             capabilities.adapter.clone()
         } else {
@@ -441,6 +453,7 @@ pub fn run_scenario(
         created_at_ms: now_ms(),
         scenario_hash,
         adapter: result.adapter.clone(),
+        adapter_mode: result.adapter_mode.clone(),
         backend: result.backend.clone(),
         protocol: result.protocol.clone(),
         files: vec![
@@ -629,16 +642,62 @@ fn enforce_network_policy(scenario: &Scenario, allow_network: bool) -> Result<()
                 .flatten()
         })
         .unwrap_or_default();
-    let local = base_url.starts_with("http://127.0.0.1")
-        || base_url.starts_with("http://localhost")
-        || base_url.starts_with("http://[::1]");
-    if !local {
+    let mut remote_endpoint =
+        (!base_url.is_empty() && !is_loopback_url(&base_url)).then_some("base_url".to_owned());
+    if remote_endpoint.is_none() {
+        remote_endpoint = scenario
+            .spec
+            .adapter
+            .config
+            .iter()
+            .filter(|(key, value)| is_endpoint_key(key) && is_absolute_http_url(value))
+            .find(|(_, value)| !is_loopback_url(value))
+            .map(|(key, _)| key.clone());
+    }
+    if let Some(endpoint) = remote_endpoint {
         bail!(
-            "network access is disabled; pass --allow-network for '{}' or configure a loopback base_url",
-            scenario.spec.adapter.name
+            "network access is disabled for endpoint '{}'; pass --allow-network for '{}' or configure loopback endpoints",
+            endpoint, scenario.spec.adapter.name
         );
     }
     Ok(())
+}
+
+fn is_endpoint_key(key: &str) -> bool {
+    key == "base_url"
+        || key == "settle_endpoint"
+        || key.starts_with("endpoint_")
+        || key.ends_with("_endpoint")
+}
+
+fn is_absolute_http_url(value: &str) -> bool {
+    value.starts_with("http://") || value.starts_with("https://")
+}
+
+fn is_loopback_url(value: &str) -> bool {
+    if !is_absolute_http_url(value) {
+        return true;
+    }
+    let authority = value
+        .split_once("://")
+        .map(|(_, rest)| rest)
+        .unwrap_or_default()
+        .split('/')
+        .next()
+        .unwrap_or_default()
+        .rsplit('@')
+        .next()
+        .unwrap_or_default();
+    let host = if authority.starts_with('[') {
+        authority
+            .split(']')
+            .next()
+            .unwrap_or_default()
+            .trim_start_matches('[')
+    } else {
+        authority.split(':').next().unwrap_or_default()
+    };
+    matches!(host, "localhost" | "127.0.0.1" | "::1")
 }
 
 fn fixture_payload(scenario: &Scenario, fixture: &Fixture) -> Value {
@@ -671,7 +730,7 @@ fn call_checked(
     timeout: u64,
 ) -> Result<Value> {
     let value = client.call(method, params, timeout)?;
-    record_event(events, "run", method, "PASS", BTreeMap::new());
+    record_event(events, "run", method, "PASS", response_details(&value));
     Ok(value)
 }
 
@@ -702,12 +761,14 @@ fn settle(
             }
         });
     let stable = state == "stable";
+    let mut event_details = details([(String::from("state"), state.to_owned())]);
+    event_details.extend(response_details(&value));
     record_event(
         events,
         phase,
         "settle",
         if stable { "PASS" } else { "UNKNOWN" },
-        details([(String::from("state"), state.to_owned())]),
+        event_details,
     );
     if !stable {
         warnings.push(format!(
@@ -770,16 +831,12 @@ fn run_probe_if_supported(
         .get("found")
         .and_then(Value::as_bool)
         .ok_or_else(|| anyhow!("adapter probe '{}' did not return boolean found", probe.id))?;
-    record_event(
-        events,
-        phase,
-        method,
-        "PASS",
-        details([
-            (String::from("probe"), probe.id.clone()),
-            (String::from("found"), found.to_string()),
-        ]),
-    );
+    let mut event_details = details([
+        (String::from("probe"), probe.id.clone()),
+        (String::from("found"), found.to_string()),
+    ]);
+    event_details.extend(response_details(&value));
+    record_event(events, phase, method, "PASS", event_details);
     Ok(Some(found))
 }
 
@@ -909,7 +966,9 @@ fn summarize_profiles(profiles: &[String], assertions: &[Assertion]) -> Vec<Prof
 fn overall_status(profiles: &[ProfileResult], assertions: &[Assertion]) -> String {
     if assertions.iter().any(|item| item.status == "ERROR") {
         "ERROR".to_owned()
-    } else if profiles.iter().any(|item| item.status == "FAIL") {
+    } else if assertions.iter().any(|item| item.status == "FAIL")
+        || profiles.iter().any(|item| item.status == "FAIL")
+    {
         "FAIL".to_owned()
     } else if profiles
         .iter()
@@ -919,6 +978,44 @@ fn overall_status(profiles: &[ProfileResult], assertions: &[Assertion]) -> Strin
     } else {
         "PASS".to_owned()
     }
+}
+
+fn response_details(value: &Value) -> BTreeMap<String, String> {
+    let Some(object) = value.as_object() else {
+        return BTreeMap::new();
+    };
+    let mut details = BTreeMap::new();
+    if let Some(ids) = object.get("request_ids").and_then(Value::as_array) {
+        let joined = ids
+            .iter()
+            .filter_map(Value::as_str)
+            .take(20)
+            .collect::<Vec<_>>()
+            .join(",");
+        if !joined.is_empty() {
+            details.insert("request_ids".to_owned(), joined);
+        }
+    }
+    for key in [
+        "remote_id",
+        "status",
+        "state",
+        "accepted",
+        "stored",
+        "deleted",
+        "revoked",
+    ] {
+        if let Some(value) = object.get(key) {
+            if let Some(text) = value.as_str() {
+                details.insert(key.to_owned(), text.to_owned());
+            } else if let Some(boolean) = value.as_bool() {
+                details.insert(key.to_owned(), boolean.to_string());
+            } else if let Some(number) = value.as_i64() {
+                details.insert(key.to_owned(), number.to_string());
+            }
+        }
+    }
+    details
 }
 
 fn fixture_by_id<'a>(scenario: &'a Scenario, id: &str) -> Result<&'a Fixture> {

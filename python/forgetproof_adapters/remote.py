@@ -45,11 +45,16 @@ class RemoteAdapter(AdapterServer):
         env_name = self.config.get("api_key_env", self.api_key_env)
         key = os.environ.get(env_name, "") if env_name else ""
         if key:
-            auth_header = self.config.get("api_key_header", "Authorization")
-            headers[auth_header] = (
-                f"Bearer {key}" if auth_header.lower() == "authorization" else key
-            )
+            default_header, default_scheme = self.auth_defaults()
+            auth_header = self.config.get("api_key_header", default_header)
+            scheme = self.config.get("api_key_scheme", default_scheme)
+            headers[auth_header] = f"{scheme} {key}" if scheme else key
         return headers
+
+    def auth_defaults(self) -> tuple[str, str]:
+        """Return the provider's default API-key header and scheme."""
+
+        return "Authorization", "Bearer"
 
     def request(self, method: str, path: str, body: Any | None = None) -> Any:
         if not self.base_url:
@@ -185,7 +190,9 @@ class RemoteAdapter(AdapterServer):
         }
 
     def handle_settle(self, params: dict[str, Any]) -> dict[str, Any]:
-        return self.settle_remote(params)
+        result = self.settle_remote(params)
+        result.setdefault("request_ids", list(self.request_ids))
+        return result
 
     def handle_cleanup(self, params: dict[str, Any]) -> dict[str, Any]:
         requested = str(params.get("run_id", ""))
@@ -295,10 +302,32 @@ def extract_found(value: Any, fixture: dict[str, Any]) -> bool:
         if isinstance(item, dict):
             if isinstance(item.get("found"), bool):
                 return bool(item["found"])
-            for key in ("results", "memories", "data", "facts", "nodes", "messages", "edges", "episodes"):
+            for key in (
+                "results",
+                "memories",
+                "data",
+                "facts",
+                "nodes",
+                "messages",
+                "edges",
+                "episodes",
+                "blocks",
+                "archival",
+            ):
                 if key in item and visit(item[key]):
                     return True
-            for key in ("fixture_id", "text", "memory", "content", "summary", "fact", "name"):
+            for key in (
+                "fixture_id",
+                "text",
+                "memory",
+                "content",
+                "summary",
+                "fact",
+                "name",
+                "value",
+                "description",
+                "label",
+            ):
                 candidate = item.get(key)
                 if candidate is not None and (content in str(candidate) or any(marker in str(candidate) for marker in markers)):
                     return True

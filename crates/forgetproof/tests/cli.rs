@@ -28,6 +28,14 @@ fn run(binary: &str, scenario: &str, output: &Path) -> std::process::Output {
         .unwrap()
 }
 
+fn scenario_with_adapter(root: &Path, template: &str, adapter: &str) -> PathBuf {
+    let source = fs::read_to_string(project_root().join(template)).unwrap();
+    let source = source.replace("name: reference-clean", &format!("name: {adapter}"));
+    let path = root.join(format!("{adapter}.yml"));
+    fs::write(&path, source).unwrap();
+    path
+}
+
 #[test]
 fn clean_backend_passes_and_bundle_verifies() {
     let root = project_root();
@@ -167,4 +175,97 @@ fn tampering_is_detected_and_report_refreshes_checksums() {
         .output()
         .unwrap();
     assert_eq!(verify_again.status.code(), Some(0));
+}
+
+#[test]
+fn protocol_contract_failures_are_standardized_and_stderr_is_ignored() {
+    let root = temp_root("protocol-contract");
+    let output_root = root.join("bundles");
+    fs::create_dir_all(&output_root).unwrap();
+
+    let stderr_noise = scenario_with_adapter(
+        &root,
+        "examples/reference-clean.yml",
+        "reference-stderr-noise",
+    );
+    let stderr_run = run(
+        env!("CARGO_BIN_EXE_memoryproof"),
+        stderr_noise.to_str().unwrap(),
+        &output_root,
+    );
+    assert_eq!(
+        stderr_run.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&stderr_run.stderr)
+    );
+
+    for (adapter, expected_message) in [
+        ("reference-malformed", "invalid JSON"),
+        ("reference-wrong-id", "response id mismatch"),
+        ("reference-wrong-version", "protocol mismatch"),
+        ("reference-crash", "exited while handling"),
+    ] {
+        let scenario = scenario_with_adapter(&root, "examples/reference-clean.yml", adapter);
+        let output = run(
+            env!("CARGO_BIN_EXE_memoryproof"),
+            scenario.to_str().unwrap(),
+            &output_root,
+        );
+        assert_eq!(output.status.code(), Some(2), "adapter={adapter}");
+        let diagnostics = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            diagnostics.contains(expected_message),
+            "adapter={adapter} diagnostics={diagnostics}"
+        );
+    }
+}
+
+#[test]
+fn asynchronous_timeout_is_unknown_and_not_a_pass() {
+    let root = temp_root("slow");
+    let output_root = root.join("bundles");
+    fs::create_dir_all(&output_root).unwrap();
+    let scenario = scenario_with_adapter(&root, "examples/reference-clean.yml", "reference-slow");
+    let run = run(
+        env!("CARGO_BIN_EXE_memoryproof"),
+        scenario.to_str().unwrap(),
+        &output_root,
+    );
+    assert_eq!(
+        run.status.code(),
+        Some(3),
+        "{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    let bundle = fs::read_dir(&output_root)
+        .unwrap()
+        .next()
+        .unwrap()
+        .unwrap()
+        .path();
+    let results = fs::read_to_string(bundle.join("results.json")).unwrap();
+    assert!(results.contains(r#""status": "UNKNOWN""#));
+    assert!(results.contains("did not report stable state"));
+}
+
+#[test]
+fn remote_endpoint_requires_explicit_network_permission() {
+    let root = temp_root("network-policy");
+    let output_root = root.join("bundles");
+    fs::create_dir_all(&output_root).unwrap();
+    let mut source = fs::read_to_string(project_root().join("examples/mem0.yml")).unwrap();
+    source = source.replace(
+        "base_url: http://localhost:8888",
+        "base_url: http://localhost:8888\n      endpoint_search: https://example.com/search",
+    );
+    let scenario = root.join("remote-endpoint.yml");
+    fs::write(&scenario, source).unwrap();
+    let run = run(
+        env!("CARGO_BIN_EXE_memoryproof"),
+        scenario.to_str().unwrap(),
+        &output_root,
+    );
+    assert_eq!(run.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&run.stderr).contains("endpoint_search"));
 }

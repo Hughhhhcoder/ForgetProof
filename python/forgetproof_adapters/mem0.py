@@ -27,6 +27,11 @@ class Mem0Adapter(RemoteAdapter):
     )
     modes = ("oss", "platform", "cloud")
 
+    def auth_defaults(self) -> tuple[str, str]:
+        if self.mode in {"platform", "cloud"}:
+            return "Authorization", "Token"
+        return "X-API-Key", ""
+
     def endpoint(self, key: str, default: str) -> str:
         configured = self.config.get(f"endpoint_{key}")
         if configured:

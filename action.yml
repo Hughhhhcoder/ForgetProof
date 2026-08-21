@@ -20,6 +20,9 @@ outputs:
   exit-code:
     description: MemoryProof exit code / MemoryProof 退出码。
     value: ${{ steps.run.outputs.exit-code }}
+  status:
+    description: Deterministic bundle status / 确定性证据包状态。
+    value: ${{ steps.run.outputs.status }}
 runs:
   using: composite
   steps:
@@ -44,6 +47,11 @@ runs:
         bundle=$(find "$GITHUB_WORKSPACE/$MEMORYPROOF_OUTPUT" -mindepth 1 -maxdepth 1 -type d -print -quit)
         echo "bundle-path=${bundle#"$GITHUB_WORKSPACE/"}" >> "$GITHUB_OUTPUT"
         echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        status=""
+        if [ -n "$bundle" ] && [ -f "$bundle/results.json" ] && command -v jq >/dev/null 2>&1; then
+          status=$(jq -r '.status // ""' "$bundle/results.json")
+        fi
+        echo "status=$status" >> "$GITHUB_OUTPUT"
         exit 0
     - name: Upload evidence bundle
       if: always()
@@ -59,6 +67,7 @@ runs:
         echo "## MemoryProof" >> "$GITHUB_STEP_SUMMARY"
         echo "- Scenario: \`${{ inputs.scenario }}\`" >> "$GITHUB_STEP_SUMMARY"
         echo "- Bundle: \`${{ steps.run.outputs.bundle-path }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "- Status: \`${{ steps.run.outputs.status }}\`" >> "$GITHUB_STEP_SUMMARY"
         echo "- Exit code: \`${{ steps.run.outputs.exit-code }}\`" >> "$GITHUB_STEP_SUMMARY"
     - name: Enforce MemoryProof result
       if: always()

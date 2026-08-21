@@ -3,6 +3,7 @@ use anyhow::{anyhow, bail, Context, Result};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Write};
+use std::ops::{Deref, DerefMut};
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::thread;
@@ -13,6 +14,74 @@ pub struct AdapterClient {
     stdin: ChildStdin,
     lines: Receiver<std::io::Result<String>>,
     next_id: u64,
+}
+
+/// Owns an adapter process for exactly one run.
+///
+/// Cleanup is deliberately armed before `prepare` is sent. A remote adapter
+/// may create a few resources and then fail halfway through preparation; the
+/// drop guard gives it one last ownership-scoped cleanup attempt before the
+/// process is terminated.
+pub struct AdapterSession {
+    client: AdapterClient,
+    run_id: String,
+    cleanup_armed: bool,
+}
+
+impl AdapterSession {
+    pub fn spawn(
+        name: &str,
+        mode: &str,
+        config: &BTreeMap<String, String>,
+        run_id: &str,
+    ) -> Result<Self> {
+        Ok(Self {
+            client: AdapterClient::spawn(name, mode, config)?,
+            run_id: run_id.to_owned(),
+            cleanup_armed: true,
+        })
+    }
+
+    /// Mark the backend as cleaned after the explicit cleanup frame succeeds.
+    pub fn mark_cleaned(&mut self) {
+        self.cleanup_armed = false;
+    }
+
+    fn try_cleanup(&mut self) {
+        if self.cleanup_armed {
+            let _ = self
+                .client
+                .call("cleanup", json!({ "run_id": self.run_id }), 1_000);
+            self.cleanup_armed = false;
+        }
+    }
+
+    /// Close the protocol after giving the cleanup guard a final chance.
+    pub fn close(&mut self) {
+        self.try_cleanup();
+        self.client.close();
+    }
+}
+
+impl Deref for AdapterSession {
+    type Target = AdapterClient;
+
+    fn deref(&self) -> &Self::Target {
+        &self.client
+    }
+}
+
+impl DerefMut for AdapterSession {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.client
+    }
+}
+
+impl Drop for AdapterSession {
+    fn drop(&mut self) {
+        self.try_cleanup();
+        self.client.close();
+    }
 }
 
 impl AdapterClient {
@@ -32,7 +101,10 @@ impl AdapterClient {
             | "reference-overdelete"
             | "reference-slow"
             | "reference-crash"
-            | "reference-malformed" => "forgetproof_adapters.reference",
+            | "reference-malformed"
+            | "reference-wrong-id"
+            | "reference-wrong-version"
+            | "reference-stderr-noise" => "forgetproof_adapters.reference",
             "mem0" => "forgetproof_adapters.mem0",
             "letta" => "forgetproof_adapters.letta",
             "zep" => "forgetproof_adapters.zep",
@@ -46,6 +118,9 @@ impl AdapterClient {
             "reference-slow" => "slow",
             "reference-crash" => "crash",
             "reference-malformed" => "malformed",
+            "reference-wrong-id" => "wrong-id",
+            "reference-wrong-version" => "wrong-version",
+            "reference-stderr-noise" => "stderr-noise",
             _ => mode,
         };
 
@@ -139,6 +214,9 @@ impl AdapterClient {
         }
         let response: Value = serde_json::from_str(&line)
             .with_context(|| format!("adapter emitted invalid JSON for '{method}'"))?;
+        if response.get("protocol").and_then(Value::as_str) != Some(PROTOCOL_VERSION) {
+            bail!("protocol mismatch in response for '{method}'");
+        }
         if response.get("id").and_then(Value::as_str) != Some(id.as_str()) {
             bail!("adapter response id mismatch for '{method}'");
         }

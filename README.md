@@ -179,9 +179,9 @@ These boundaries are part of the product, not a footnote. Reports explicitly sep
 | `reference-clean` | local | Full erasure and isolation reference behavior |
 | `reference-leaky` | local | Deliberate derived-artifact residue |
 | `reference-overdelete` | local | Deliberate control-subject deletion |
-| `mem0` | OSS / platform / cloud | Object, scope, search, optional inspect |
-| `letta` | self-hosted / cloud | Agent, archival passage, scope, optional query |
-| `zep` | self-hosted / cloud | Episode, user scope, search, graph inspection |
+| `mem0` | OSS / platform / cloud | Object, scope, search, optional raw/derived inspection; async settle |
+| `letta` | self-hosted / cloud | Temporary Agent, core block, archival passage, scope delete, optional query |
+| `zep` | self-hosted / cloud | Episode, temporary user/thread, user scope, search, graph inspection |
 
 Remote access is opt-in. Credentials are read from environment variables and are never written into scenarios or evidence:
 
@@ -197,9 +197,9 @@ Adapters communicate with the Rust runner through the versioned `memoryproof.ada
 Each run emits an offline-readable package:
 
 ```text
-manifest.json       format, run, adapter, protocol, and bundle hash
+manifest.json       format, run, adapter mode, protocol, and bundle hash
 scenario.lock.json  redacted, frozen scenario snapshot
-events.ndjson       ordered method-level journal
+events.ndjson       ordered method journal with safe request IDs
 results.json        machine-readable assertions and profile states
 report.html         single-file bilingual report
 junit.xml           CI-native test report
@@ -223,7 +223,7 @@ jobs:
   memoryproof:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: Hughhhhcoder/MemoryProof@v1
         with:
           scenario: examples/reference-clean.yml

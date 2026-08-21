@@ -1,9 +1,17 @@
+import json
 import os
+import threading
 import unittest
+from http.server import ThreadingHTTPServer
+from unittest.mock import patch
 
+from forgetproof_adapters.letta import LettaAdapter
+from forgetproof_adapters.mem0 import Mem0Adapter
 from forgetproof_adapters.protocol import AdapterError, PROTOCOL_VERSION
 from forgetproof_adapters.reference import ReferenceAdapter
 from forgetproof_adapters.remote import extract_found
+from forgetproof_adapters.zep import ZepAdapter
+from scripts.mock_remote_backend import Handler, State
 
 
 def fixture_payload(fixture_id: str, subject: str, content: str, role: str) -> dict:
@@ -95,6 +103,77 @@ class ResponseParsingTests(unittest.TestCase):
 
     def test_protocol_constant_is_stable(self):
         self.assertEqual(PROTOCOL_VERSION, "memoryproof.adapter/v1")
+
+
+class MockRemoteAdapterTests(unittest.TestCase):
+    def setUp(self):
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server.state = State("test")
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+        self.addCleanup(self.server.shutdown)
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.thread.join, 2)
+
+    def run_subject_erase_cycle(self, adapter_class, name: str, mode: str):
+        self.server.state = State(name)
+        base_url = f"http://127.0.0.1:{self.server.server_port}"
+        target = fixture_payload("target", "target-subject", f"{name} target canary 7f3e9d", "target")
+        control = fixture_payload("control", "control-subject", f"{name} control canary 91c4a2", "control")
+        env = {
+            "MEMORYPROOF_ADAPTER_NAME": name,
+            "MEMORYPROOF_ADAPTER_MODE": mode,
+            "MEMORYPROOF_CONFIG_JSON": json.dumps({"base_url": base_url}),
+        }
+        with patch.dict(os.environ, env, clear=False):
+            adapter = adapter_class()
+            prepared = adapter.handle_prepare({"run_id": f"{name}-run", "fixtures": [target, control]})
+            self.assertTrue(prepared["request_ids"])
+            ingested = adapter.handle_ingest({"fixture": target})
+            self.assertTrue(ingested["request_ids"])
+            adapter.handle_ingest({"fixture": control})
+            self.assertTrue(
+                adapter.handle_probe(
+                    {"probe": {"fixture": "target", "as_subject": "target-subject"}}
+                )["found"]
+            )
+            self.assertTrue(
+                adapter.handle_inspect(
+                    {"probe": {"fixture": "target", "as_subject": "target-subject"}}
+                )["found"]
+            )
+            adapter.handle_erase(
+                {
+                    "target": "target",
+                    "target_subject": "target-subject",
+                    "intent": "subject_erase",
+                }
+            )
+            self.assertFalse(
+                adapter.handle_probe(
+                    {"probe": {"fixture": "target", "as_subject": "target-subject"}}
+                )["found"]
+            )
+            self.assertFalse(
+                adapter.handle_inspect(
+                    {"probe": {"fixture": "target", "as_subject": "target-subject"}}
+                )["found"]
+            )
+            self.assertTrue(
+                adapter.handle_probe(
+                    {"probe": {"fixture": "control", "as_subject": "control-subject"}}
+                )["found"]
+            )
+            adapter.handle_cleanup({"run_id": f"{name}-run"})
+
+    def test_mem0_subject_erase_is_scoped(self):
+        self.run_subject_erase_cycle(Mem0Adapter, "mem0", "oss")
+
+    def test_letta_deletes_agent_and_core_block(self):
+        self.run_subject_erase_cycle(LettaAdapter, "letta", "self-hosted")
+
+    def test_zep_user_erase_is_scoped(self):
+        self.run_subject_erase_cycle(ZepAdapter, "zep", "self-hosted")
 
 
 if __name__ == "__main__":

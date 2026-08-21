@@ -132,6 +132,9 @@ pub fn run() -> Result<()> {
                     "reference-slow",
                     "reference-crash",
                     "reference-malformed",
+                    "reference-wrong-id",
+                    "reference-wrong-version",
+                    "reference-stderr-noise",
                 ] {
                     println!("{name:<22} built-in    {}", model::PROTOCOL_VERSION);
                 }

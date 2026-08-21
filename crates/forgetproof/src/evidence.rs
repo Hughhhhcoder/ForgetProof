@@ -317,7 +317,7 @@ h1 {{ margin:0 0 8px; font-size:clamp(30px,6vw,64px); letter-spacing:-.06em; lin
 li {{ color:var(--muted); margin:5px 0; }} footer {{ margin-top:36px; color:var(--muted); font-size:13px; }} @media(max-width:720px) {{ .hero {{ display:block; }} .hero .status {{ display:inline-block; margin-top:14px; }} .claims {{ grid-template-columns:1fr; }} }}
 </style></head><body><main>
 <section class="hero"><div><span class="eyebrow">MEMORYPROOF · {suite}</span><h1>{scenario}</h1><p>{adapter} · {backend} · {backend_version}</p><p>Prove what was observable, what disappeared, and what remains unknown.<br>证明可观察到什么、什么已经消失，以及什么仍然未知。</p></div><div class="status {status_class}">{status}</div></section>
-<section class="meta card"><div><span class="label">Run / 运行</span><code>{run_id}</code></div><div><span class="label">Scenario hash / 场景哈希</span><code>{scenario_hash}</code></div><div><span class="label">Protocol / 协议</span><code>{protocol}</code></div><div><span class="label">Exit code / 退出码</span><code>{exit_code}</code></div></section>
+<section class="meta card"><div><span class="label">Run / 运行</span><code>{run_id}</code></div><div><span class="label">Adapter mode / 适配器模式</span><code>{adapter_mode}</code></div><div><span class="label">Scenario hash / 场景哈希</span><code>{scenario_hash}</code></div><div><span class="label">Protocol / 协议</span><code>{protocol}</code></div><div><span class="label">Exit code / 退出码</span><code>{exit_code}</code></div></section>
 <h2>Evidence summary / 证据摘要</h2><section class="claims"><article class="claim"><h3 class="pass">Proved / 已证明</h3><p>Required assertions marked PASS passed deterministic observable checks.</p></article><article class="claim"><h3 class="fail">Observed residue / 发现残留</h3><p>FAIL means a probe still observed the target or a forbidden derivative.</p></article><article class="claim"><h3 class="unknown">Unknown / 未知</h3><p>UNKNOWN means the backend did not expose enough evidence to claim more.</p></article></section>
 <h2>Profiles / 认证档案</h2><section class="card"><table><thead><tr><th>Profile / 档案</th><th>Status / 状态</th><th>Assertions / 断言</th></tr></thead><tbody>{profiles}</tbody></table></section>
 <h2>Assertions / 断言明细</h2><section class="card"><table><thead><tr><th>ID</th><th>Profile</th><th>Artifact / 边界</th><th>Status</th><th>Message / 说明</th><th>Expected / Observed</th></tr></thead><tbody>{assertions}</tbody></table></section>
@@ -330,6 +330,7 @@ li {{ color:var(--muted); margin:5px 0; }} footer {{ margin-top:36px; color:var(
         adapter = html_escape(&result.adapter),
         backend = html_escape(&result.backend),
         backend_version = html_escape(&result.backend_version),
+        adapter_mode = html_escape(&result.adapter_mode),
         status = html_escape(&result.status),
         status_class = html_escape(&status_class),
         run_id = html_escape(&result.run_id),

@@ -12,6 +12,8 @@
 - 增加 Isolation 隔离套件、稳定的 `memoryproof.dev/v1` 场景 API 和 `memoryproof.adapter/v1` 协议。
 - 增加目标/控制主体隔离、明确的 `UNKNOWN` 语义、证据包兼容和双语离线报告。
 - 增加跨平台发行、多架构 OCI 镜像及 SBOM/来源证明、CodeQL、Scorecard 和已验证的静态矩阵。
+- 增强失败路径清理、endpoint 级网络授权、响应协议校验，以及安全请求 ID 证据记录。
+- 增加 Letta core-memory block 的创建/删除，并为 Mem0、Letta、Zep 增加 mock 契约覆盖。
 
 ## [0.1.0] - 2026-08-18
 

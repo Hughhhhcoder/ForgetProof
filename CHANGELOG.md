@@ -12,6 +12,8 @@ All notable changes to MemoryProof are documented here.
 - Added the Isolation suite, stable `memoryproof.dev/v1` scenario API, and `memoryproof.adapter/v1` protocol.
 - Added target/control subject isolation, explicit `UNKNOWN` semantics, bundle compatibility, and a bilingual offline report.
 - Added multi-platform release packaging, multi-architecture OCI builds with SBOM/provenance, CodeQL, Scorecard, and a verified static matrix.
+- Hardened failure cleanup with an ownership-scoped adapter guard, endpoint-level network authorization, response protocol validation, and safe request-ID evidence.
+- Added Letta core-memory block creation/deletion and mock contract coverage for Mem0, Letta, and Zep.
 
 ## [0.1.0] - 2026-08-18
 

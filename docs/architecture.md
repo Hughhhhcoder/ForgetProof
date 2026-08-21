@@ -21,7 +21,7 @@ sequenceDiagram
     R->>A: settle + before probes
     R->>A: erase or isolation probes
     R->>A: settle + after probes
-    R->>A: cleanup owned resources
+    R->>A: cleanup owned resources (also on failure)
     R->>E: results, report, JUnit, SHA-256 manifest
 ```
 
@@ -30,8 +30,8 @@ sequenceDiagram
 | Boundary | Owner | Rule |
 | --- | --- | --- |
 | Scenario and assertion engine | Rust | No LLM output participates in the final decision. |
-| Adapter process | Python | stdout is protocol-only; stderr is diagnostic. |
-| Provider API | Adapter | Credentials come from the environment; request IDs may be recorded, secrets may not. |
+| Adapter process | Python | stdout is protocol-only; stderr is diagnostic; cleanup is ownership-scoped. |
+| Provider API | Adapter | Credentials come from the environment; safe request IDs may be recorded, secrets may not. |
 | Evidence bundle | Rust filesystem | Paths are validated and checksums are sorted before the bundle hash is written. |
 | Public matrix | CI + reviewed bundles | A bundle must verify before a profile is indexed. |
 
@@ -48,6 +48,10 @@ The scenario API is `memoryproof.dev/v1`; the adapter protocol is `memoryproof.a
 ```
 
 The response ID must match. A process crash, timeout, malformed JSON, protocol mismatch, or unsupported method becomes a standardized error. A missing backend capability becomes `SKIP` or `UNKNOWN`, never a fabricated `PASS`.
+
+The Rust runner arms an ownership-scoped cleanup guard before `prepare`. If a provider call, protocol frame, or process fails halfway through a run, the adapter receives one final `cleanup` attempt before the child process is terminated. Remote endpoint overrides are also subject to the same explicit network permission as `base_url`.
+
+The official adapters intentionally expose different observable boundaries: Mem0 reports its configured memory/entity paths, Letta checks both archival passages and temporary core-memory blocks, and Zep checks episode search plus the configured user graph. An endpoint that is unavailable remains `UNKNOWN`; it is not silently treated as an empty store.
 
 ## Why the control fixture exists
 

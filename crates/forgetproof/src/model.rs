@@ -483,6 +483,8 @@ pub struct RunResult {
     pub suite: String,
     pub scenario: String,
     pub adapter: String,
+    #[serde(default)]
+    pub adapter_mode: String,
     pub backend: String,
     #[serde(default)]
     pub backend_version: String,
@@ -512,6 +514,8 @@ pub struct Manifest {
     pub created_at_ms: u128,
     pub scenario_hash: String,
     pub adapter: String,
+    #[serde(default)]
+    pub adapter_mode: String,
     pub backend: String,
     pub protocol: String,
     pub files: Vec<String>,

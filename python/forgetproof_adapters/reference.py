@@ -23,7 +23,17 @@ class ReferenceAdapter(AdapterServer):
         "async_settle",
         "isolated_namespace",
     )
-    modes = ("clean", "leaky", "overdelete", "slow", "crash", "malformed")
+    modes = (
+        "clean",
+        "leaky",
+        "overdelete",
+        "slow",
+        "crash",
+        "malformed",
+        "wrong-id",
+        "wrong-version",
+        "stderr-noise",
+    )
 
     def __init__(self) -> None:
         super().__init__()
@@ -32,6 +42,9 @@ class ReferenceAdapter(AdapterServer):
         self.slow = self.mode == "slow"
         self.crash = self.mode == "crash"
         self.malformed = self.mode == "malformed"
+        self.wrong_id = self.mode == "wrong-id"
+        self.wrong_version = self.mode == "wrong-version"
+        self.stderr_noise = self.mode == "stderr-noise"
         self.run_id = ""
         self.raw: dict[tuple[str, str], str] = {}
         self.derived: dict[tuple[str, str], str] = {}
@@ -45,6 +58,17 @@ class ReferenceAdapter(AdapterServer):
                 __import__("sys").stdout.flush()
                 return
         super().serve()
+
+    def finalize_response(
+        self, response: dict[str, Any], request: dict[str, Any] | None
+    ) -> dict[str, Any]:
+        if self.stderr_noise:
+            print("reference adapter diagnostic on stderr", file=__import__("sys").stderr)
+        if self.wrong_id:
+            response["id"] = "wrong-request-id"
+        if self.wrong_version:
+            response["protocol"] = "forgetproof.adapter/v1alpha1"
+        return response
 
     def _maybe_crash(self) -> None:
         if self.crash:
@@ -188,7 +212,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="MemoryProof reference adapter")
     parser.add_argument(
         "--mode",
-        choices=["clean", "leaky", "overdelete", "slow", "crash", "malformed"],
+        choices=[
+            "clean",
+            "leaky",
+            "overdelete",
+            "slow",
+            "crash",
+            "malformed",
+            "wrong-id",
+            "wrong-version",
+            "stderr-noise",
+        ],
         default=None,
     )
     parser.parse_args()

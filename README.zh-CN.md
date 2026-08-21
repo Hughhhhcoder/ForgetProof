@@ -179,9 +179,9 @@ MemoryProof 是一个包含两个套件的总项目：
 | `reference-clean` | 本地 | 完整遗忘和隔离参考行为 |
 | `reference-leaky` | 本地 | 故意遗留衍生工件 |
 | `reference-overdelete` | 本地 | 故意删除控制主体 |
-| `mem0` | OSS / platform / cloud | 对象、范围、搜索、可选检查 |
-| `letta` | self-hosted / cloud | Agent、archival passage、范围、可选查询 |
-| `zep` | self-hosted / cloud | episode、user 范围、搜索、图检查 |
+| `mem0` | OSS / platform / cloud | 对象、范围、搜索、可选原始/衍生检查，以及异步稳定等待 |
+| `letta` | self-hosted / cloud | 临时 Agent、核心 block、archival passage、范围删除、可选查询 |
+| `zep` | self-hosted / cloud | episode、临时 user/thread、user 范围、搜索和图检查 |
 
 访问远程后端必须显式授权。凭据只从环境变量读取，绝不会写入场景或证据包：
 
@@ -197,9 +197,9 @@ MEM0_BASE_URL=https://... MEM0_API_KEY=... \
 每次运行都会生成一个可离线打开的包：
 
 ```text
-manifest.json       格式、运行、适配器、协议与 bundle hash
+manifest.json       格式、运行、适配器模式、协议与 bundle hash
 scenario.lock.json  脱敏后的冻结场景快照
-events.ndjson       按顺序记录的方法级事件
+events.ndjson       按顺序记录的方法级事件与安全的请求 ID
 results.json        机器可读的断言与档案状态
 report.html         单文件双语报告
 junit.xml           CI 原生测试报告
@@ -223,7 +223,7 @@ jobs:
   memoryproof:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: Hughhhhcoder/MemoryProof@v1
         with:
           scenario: examples/reference-clean.yml
