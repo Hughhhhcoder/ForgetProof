@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776ab?logo=python&logoColor=white" alt="Python 3.11 or newer" />
   <img src="https://img.shields.io/badge/privacy-local--first-10b981?logo=shield&logoColor=white" alt="Local-first privacy" />
   <img src="https://img.shields.io/badge/evidence-SHA--256-f59e0b?logo=datadog&logoColor=white" alt="SHA-256 evidence" />
-  <img src="https://img.shields.io/badge/status-v1.0.3-8b5cf6?logo=rocket" alt="v1.0.3" />
+  <img src="https://img.shields.io/badge/status-v1.0.4-8b5cf6?logo=rocket" alt="v1.0.4" />
 </p>
 
 <p align="center">

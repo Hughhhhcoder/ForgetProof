@@ -628,10 +628,7 @@ fn enforce_adapter_network_policy(
     if adapter_name.starts_with("reference-") {
         return Ok(());
     }
-    if allow_network
-        || std::env::var("MEMORYPROOF_ALLOW_NETWORK").as_deref() == Ok("1")
-        || std::env::var("FORGETPROOF_ALLOW_NETWORK").as_deref() == Ok("1")
-    {
+    if allow_network {
         return Ok(());
     }
     let base_url = config
@@ -700,11 +697,7 @@ fn adapter_python_paths() -> Vec<PathBuf> {
 }
 
 fn enforce_url_network_policy(label: &str, url: &str, allow_network: bool) -> Result<()> {
-    if allow_network
-        || std::env::var("MEMORYPROOF_ALLOW_NETWORK").as_deref() == Ok("1")
-        || std::env::var("FORGETPROOF_ALLOW_NETWORK").as_deref() == Ok("1")
-        || is_loopback_url(url)
-    {
+    if allow_network || is_loopback_url(url) {
         return Ok(());
     }
     bail!(

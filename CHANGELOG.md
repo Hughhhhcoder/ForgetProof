@@ -8,6 +8,12 @@ All notable changes to MemoryProof are documented here.
 
 No unreleased changes.
 
+## [1.0.4] - 2026-08-22
+
+### Security
+
+- Require the explicit `--allow-network` flag for every non-loopback endpoint; legacy environment variables can no longer bypass the CLI authorization boundary.
+
 ## [1.0.3] - 2026-08-22
 
 ### Fixed

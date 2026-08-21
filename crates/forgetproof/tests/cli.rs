@@ -275,6 +275,35 @@ fn remote_endpoint_requires_explicit_network_permission() {
 }
 
 #[test]
+fn network_environment_variables_cannot_bypass_cli_permission() {
+    let root = temp_root("network-env-bypass");
+    let output_root = root.join("bundles");
+    fs::create_dir_all(&output_root).unwrap();
+    let mut source = fs::read_to_string(project_root().join("examples/mem0.yml")).unwrap();
+    source = source.replace(
+        "base_url: http://localhost:8888",
+        "base_url: http://localhost:8888\n      endpoint_search: https://example.com/search",
+    );
+    let scenario = root.join("remote-endpoint.yml");
+    fs::write(&scenario, source).unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_memoryproof"))
+        .current_dir(project_root())
+        .env("MEMORYPROOF_ALLOW_NETWORK", "1")
+        .env("FORGETPROOF_ALLOW_NETWORK", "1")
+        .args([
+            "run",
+            scenario.to_str().unwrap(),
+            "--output",
+            output_root.to_str().unwrap(),
+            "--allow-network=false",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("endpoint_search"));
+}
+
+#[test]
 fn doctor_remote_endpoint_requires_explicit_network_permission() {
     let output = Command::new(env!("CARGO_BIN_EXE_memoryproof"))
         .current_dir(project_root())
