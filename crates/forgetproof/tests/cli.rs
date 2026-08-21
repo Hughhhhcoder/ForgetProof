@@ -71,8 +71,12 @@ fn clean_backend_passes_and_bundle_verifies() {
     let scenario = fs::read_to_string(bundle.join("scenario.lock.json")).unwrap();
     assert!(!scenario.contains("target alpha 7f3e9d"));
     assert!(scenario.contains("sha256:"));
+    let scenario_yaml = fs::read_to_string(bundle.join("scenario.lock.yml")).unwrap();
+    assert!(!scenario_yaml.contains("target alpha 7f3e9d"));
+    assert!(scenario_yaml.contains("apiVersion:"));
     let manifest = fs::read_to_string(bundle.join("manifest.json")).unwrap();
     assert!(manifest.contains("memoryproof.bundle/v1"));
+    assert!(manifest.contains("scenario.lock.yml"));
 }
 
 #[test]
@@ -268,4 +272,69 @@ fn remote_endpoint_requires_explicit_network_permission() {
     );
     assert_eq!(run.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&run.stderr).contains("endpoint_search"));
+}
+
+#[test]
+fn doctor_remote_endpoint_requires_explicit_network_permission() {
+    let output = Command::new(env!("CARGO_BIN_EXE_memoryproof"))
+        .current_dir(project_root())
+        .args([
+            "doctor",
+            "--adapter",
+            "mem0",
+            "--config",
+            "base_url=https://example.com",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("base_url"));
+}
+
+#[test]
+fn expand_llm_endpoint_requires_explicit_network_permission() {
+    let output_path = temp_root("expand-network").join("scenario.lock.yml");
+    let output = Command::new(env!("CARGO_BIN_EXE_memoryproof"))
+        .current_dir(project_root())
+        .env_remove("MEMORYPROOF_LLM_BASE_URL")
+        .env_remove("FORGETPROOF_LLM_BASE_URL")
+        .env_remove("OPENAI_BASE_URL")
+        .env_remove("MEMORYPROOF_ALLOW_NETWORK")
+        .env_remove("FORGETPROOF_ALLOW_NETWORK")
+        .env("MEMORYPROOF_LLM_BASE_URL", "https://example.com")
+        .args([
+            "expand",
+            "examples/reference-clean.yml",
+            "-o",
+            output_path.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("LLM base URL"));
+}
+
+#[test]
+fn adapters_can_be_loaded_from_explicit_runtime_root() {
+    let output_root = temp_root("adapter-root");
+    let scenario = project_root().join("examples/reference-clean.yml");
+    let python_root = project_root().join("python");
+    let output = Command::new(env!("CARGO_BIN_EXE_memoryproof"))
+        .current_dir(&output_root)
+        .env("MEMORYPROOF_ADAPTER_ROOT", python_root)
+        .env_remove("PYTHONPATH")
+        .args([
+            "run",
+            scenario.to_str().unwrap(),
+            "--output",
+            output_root.join("bundles").to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 }

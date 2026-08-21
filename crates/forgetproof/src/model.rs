@@ -519,7 +519,7 @@ pub struct Manifest {
     pub backend: String,
     pub protocol: String,
     pub files: Vec<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub bundle_hash: String,
 }
 

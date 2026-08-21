@@ -8,6 +8,16 @@ All notable changes to MemoryProof are documented here.
 
 No unreleased changes.
 
+## [1.0.3] - 2026-08-22
+
+### Fixed
+
+- Stage every checksum-verified public evidence bundle into the Pages artifact so matrix report links work offline.
+- Enforce explicit network permission for `doctor` and OpenAI-compatible probe expansion.
+- Emit both JSON and YAML frozen scenario snapshots in every new evidence bundle.
+- Bundle Python adapter modules with platform archives and resolve them beside the downloaded binary.
+- Validate LLM-generated probe identifiers and queries before freezing them.
+
 ## [1.0.2] - 2026-08-22
 
 ### Changed

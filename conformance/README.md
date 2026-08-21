@@ -10,7 +10,7 @@ This directory contains small, reviewed, redacted evidence bundles that can be o
 
 Each directory under `conformance/evidence/` is a complete bundle produced by `memoryproof run` and must include:
 
-- `manifest.json`, `scenario.lock.json`, `events.ndjson`, and `results.json`;
+- `manifest.json`, `scenario.lock.json`, `scenario.lock.yml`, `events.ndjson`, and `results.json`;
 - `report.html` and `junit.xml`;
 - `checksums.sha256` and `bundle.hash`;
 - synthetic fixtures only, with credentials and raw customer content removed.

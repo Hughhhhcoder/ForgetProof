@@ -75,22 +75,26 @@ def main() -> None:
     for variant in variants:
         if not isinstance(variant, dict):
             continue
+        variant_id = variant.get("id")
+        query = variant.get("query")
         if variant.get("fixture") not in allowed:
             continue
         if variant.get("kind") not in {"lexical", "semantic"}:
             continue
-        if not variant.get("query") or variant.get("id") in existing:
+        if not isinstance(variant_id, str) or not variant_id.strip():
+            continue
+        if not isinstance(query, str) or not query.strip() or variant_id in existing:
             continue
         scenario["spec"]["probes"]["after"].append(
             {
-                "id": str(variant["id"]),
+                "id": variant_id,
                 "fixture": str(variant["fixture"]),
                 "kind": str(variant["kind"]),
-                "query": str(variant["query"]),
+                "query": query,
                 "as_subject": str(variant.get("as_subject", "")),
             }
         )
-        existing.add(str(variant["id"]))
+        existing.add(variant_id)
     json.dump(scenario, sys.stdout, ensure_ascii=False, separators=(",", ":"))
 
 

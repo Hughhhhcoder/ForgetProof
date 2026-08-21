@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776ab?logo=python&logoColor=white" alt="Python 3.11 及以上" />
   <img src="https://img.shields.io/badge/privacy-local--first-10b981?logo=shield&logoColor=white" alt="本地优先隐私" />
   <img src="https://img.shields.io/badge/evidence-SHA--256-f59e0b?logo=datadog&logoColor=white" alt="SHA-256 证据" />
-  <img src="https://img.shields.io/badge/status-v1.0.2-8b5cf6?logo=rocket" alt="v1.0.2" />
+  <img src="https://img.shields.io/badge/status-v1.0.3-8b5cf6?logo=rocket" alt="v1.0.3" />
 </p>
 
 <p align="center">
@@ -126,7 +126,7 @@ cargo run -- run examples/reference-leaky.yml
 
 ### 使用发行版二进制或容器
 
-可以从 [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases) 下载 Linux、macOS 或 Windows 二进制，也可以运行 GHCR 容器：
+可以从 [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases) 下载 Linux、macOS 或 Windows 二进制，也可以运行 GHCR 容器。每个平台压缩包都包含无额外依赖的 Python 适配器模块；如果把它们放在其他位置，请将 `MEMORYPROOF_ADAPTER_ROOT` 指向压缩包内的 `python/` 目录：
 
 ```bash
 docker run --rm -v "$PWD":/workspace \
@@ -197,8 +197,9 @@ MEM0_BASE_URL=https://... MEM0_API_KEY=... \
 每次运行都会生成一个可离线打开的包：
 
 ```text
-manifest.json       格式、运行、适配器模式、协议与 bundle hash
+manifest.json       格式、运行、适配器模式、协议与声明的文件列表
 scenario.lock.json  脱敏后的冻结场景快照
+scenario.lock.yml   同一份冻结快照的 YAML 版本
 events.ndjson       按顺序记录的方法级事件与安全的请求 ID
 results.json        机器可读的断言与档案状态
 report.html         单文件双语报告
@@ -206,6 +207,11 @@ junit.xml           CI 原生测试报告
 checksums.sha256    每个文件的 SHA-256 完整性清单
 bundle.hash         清单本身的哈希
 ```
+
+只有在确实允许访问供应商 endpoint 时，才使用
+`memoryproof doctor --allow-network`；只有在探针生成配置为访问非本机
+OpenAI-compatible endpoint 时，才使用 `memoryproof expand ... --allow-network`。
+生成的探针会在运行前冻结，最终 PASS/FAIL 判定不会交给模型。
 
 默认情况下，内容会被缩减为哈希、长度、类型和安全的结构摘要。`--allow-network` 只授权访问远程后端，不会关闭脱敏策略。
 

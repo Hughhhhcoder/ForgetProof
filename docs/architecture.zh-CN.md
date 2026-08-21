@@ -49,7 +49,7 @@ sequenceDiagram
 
 响应 ID 必须匹配。进程崩溃、超时、畸形 JSON、协议不匹配或不支持的方法都会变成标准错误；后端没有的能力会变为 `SKIP` 或 `UNKNOWN`，绝不会伪造 `PASS`。
 
-Rust 运行器会在发送 `prepare` 前就启动带所有权范围的清理保护。如果供应商调用、协议帧或子进程在运行中途失败，终止子进程前还会向适配器发送最后一次 `cleanup`。远程 endpoint 覆盖项也必须遵守与 `base_url` 相同的显式网络授权。
+Rust 运行器会在发送 `prepare` 前就启动带所有权范围的清理保护。如果供应商调用、协议帧或子进程在运行中途失败，终止子进程前还会向适配器发送最后一次 `cleanup`。远程 endpoint 覆盖项、`doctor` 和可选的 LLM 探针扩展也必须显式授权网络；本地 mock 的 loopback endpoint 仍可直接使用。
 
 官方适配器会诚实区分可观察边界：Mem0 检查当前配置的记忆/实体路径，Letta 同时检查 archival passage 和临时 core-memory block，Zep 检查 episode 搜索和配置的 user graph。接口不可用时保持 `UNKNOWN`，不会静默当成空存储。
 
@@ -59,7 +59,7 @@ Rust 运行器会在发送 `prepare` 前就启动带所有权范围的清理保�
 
 ## 证据哈希代表什么
 
-`checksums.sha256` 按排序顺序列出证据包声明的文件。`bundle.hash` 是这段完整清单文本的 SHA-256 哈希。它证明运行后文件字节没有被修改；v1 不声称证明签名者身份、物理擦除、供应商日志删除、备份删除或模型权重反学习。
+`checksums.sha256` 按排序顺序列出证据包声明的文件。`bundle.hash` 是这段完整清单文本的 SHA-256 哈希；它是权威 bundle hash，因为把哈希写入 `manifest.json` 会产生循环校验。它证明运行后文件字节没有被修改；v1 不声称证明签名者身份、物理擦除、供应商日志删除、备份删除或模型权重反学习。
 
 ## 添加供应商适配器
 

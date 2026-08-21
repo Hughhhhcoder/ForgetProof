@@ -10,7 +10,7 @@
 
 `conformance/evidence/` 下的每个目录都应该是由 `memoryproof run` 生成的完整证据包，并包含：
 
-- `manifest.json`、`scenario.lock.json`、`events.ndjson` 和 `results.json`；
+- `manifest.json`、`scenario.lock.json`、`scenario.lock.yml`、`events.ndjson` 和 `results.json`；
 - `report.html` 和 `junit.xml`；
 - `checksums.sha256` 和 `bundle.hash`；
 - 只有合成 fixture，已移除凭据和客户原文。

@@ -63,6 +63,19 @@ jobs:
         run: |
           python scripts/build_matrix.py
           python -m json.tool site/matrix.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          matrix = json.loads(Path("site/matrix.json").read_text())
+          missing = [
+              row["evidence"]
+              for row in matrix["results"]
+              if not (Path("site") / row["evidence"].removeprefix("./")).is_file()
+          ]
+          if missing:
+              raise SystemExit(f"matrix links missing staged evidence: {missing}")
+          print(f"verified {len(matrix['results'])} matrix rows and their offline reports")
+          PY
       - name: Upload evidence bundles
         if: always()
         uses: actions/upload-artifact@v7

@@ -49,7 +49,7 @@ The scenario API is `memoryproof.dev/v1`; the adapter protocol is `memoryproof.a
 
 The response ID must match. A process crash, timeout, malformed JSON, protocol mismatch, or unsupported method becomes a standardized error. A missing backend capability becomes `SKIP` or `UNKNOWN`, never a fabricated `PASS`.
 
-The Rust runner arms an ownership-scoped cleanup guard before `prepare`. If a provider call, protocol frame, or process fails halfway through a run, the adapter receives one final `cleanup` attempt before the child process is terminated. Remote endpoint overrides are also subject to the same explicit network permission as `base_url`.
+The Rust runner arms an ownership-scoped cleanup guard before `prepare`. If a provider call, protocol frame, or process fails halfway through a run, the adapter receives one final `cleanup` attempt before the child process is terminated. Remote endpoint overrides, `doctor`, and optional LLM probe expansion are also subject to explicit network permission; loopback endpoints remain available for local mocks.
 
 The official adapters intentionally expose different observable boundaries: Mem0 reports its configured memory/entity paths, Letta checks both archival passages and temporary core-memory blocks, and Zep checks episode search plus the configured user graph. An endpoint that is unavailable remains `UNKNOWN`; it is not silently treated as an empty store.
 
@@ -59,7 +59,7 @@ The target fixture proves that deletion happened to something observable. The co
 
 ## What the evidence hash means
 
-`checksums.sha256` lists the declared bundle files in sorted order. `bundle.hash` is the SHA-256 hash of that exact checksum text. This proves post-run byte integrity; v1 does not claim signer identity, physical erasure, provider-log deletion, backup deletion, or model-weight unlearning.
+`checksums.sha256` lists the declared bundle files in sorted order. `bundle.hash` is the SHA-256 hash of that exact checksum text; it is the authoritative bundle hash because putting the hash inside `manifest.json` would create a circular checksum. This proves post-run byte integrity; v1 does not claim signer identity, physical erasure, provider-log deletion, backup deletion, or model-weight unlearning.
 
 ## Adding a provider adapter
 

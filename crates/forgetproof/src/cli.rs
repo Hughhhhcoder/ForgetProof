@@ -37,6 +37,8 @@ enum Command {
         input: PathBuf,
         #[arg(short, long)]
         output: PathBuf,
+        #[arg(long, default_value_t = false, default_missing_value = "true", num_args = 0..=1)]
+        allow_network: bool,
     },
     /// Execute a MemoryProof scenario and write an evidence bundle.
     Run {
@@ -76,6 +78,8 @@ struct AdapterArgs {
     adapter: Option<String>,
     #[arg(long, default_value = "default")]
     mode: String,
+    #[arg(long, default_value_t = false, default_missing_value = "true", num_args = 0..=1)]
+    allow_network: bool,
     /// Repeat as --config key=value. Values are passed to the adapter process.
     #[arg(long = "config", value_parser = parse_key_value)]
     config: Vec<(String, String)>,
@@ -111,7 +115,8 @@ pub fn run() -> Result<()> {
                 |name| vec![name],
             );
             for name in names {
-                let capabilities = runner::doctor_adapter(&name, &args.mode, &config)?;
+                let capabilities =
+                    runner::doctor_adapter(&name, &args.mode, &config, args.allow_network)?;
                 println!("adapter: {}", capabilities.adapter);
                 println!("backend: {}", capabilities.backend);
                 println!("protocol: {}", capabilities.protocol);
@@ -143,8 +148,12 @@ pub fn run() -> Result<()> {
                 }
             }
         },
-        Command::Expand { input, output } => {
-            runner::expand_scenario(&input, &output)?;
+        Command::Expand {
+            input,
+            output,
+            allow_network,
+        } => {
+            runner::expand_scenario(&input, &output, allow_network)?;
             println!("wrote frozen scenario to {}", output.display());
         }
         Command::Run {

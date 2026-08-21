@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776ab?logo=python&logoColor=white" alt="Python 3.11 or newer" />
   <img src="https://img.shields.io/badge/privacy-local--first-10b981?logo=shield&logoColor=white" alt="Local-first privacy" />
   <img src="https://img.shields.io/badge/evidence-SHA--256-f59e0b?logo=datadog&logoColor=white" alt="SHA-256 evidence" />
-  <img src="https://img.shields.io/badge/status-v1.0.2-8b5cf6?logo=rocket" alt="v1.0.2" />
+  <img src="https://img.shields.io/badge/status-v1.0.3-8b5cf6?logo=rocket" alt="v1.0.3" />
 </p>
 
 <p align="center">
@@ -126,7 +126,7 @@ It exits `1`: the raw item disappears, but a derived artifact remains observable
 
 ### Use the released binary or container
 
-Download a platform binary from [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases), or run the GHCR image:
+Download a platform binary from [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases), or run the GHCR image. Each binary archive includes the dependency-free Python adapter modules; if you keep them in a different location, set `MEMORYPROOF_ADAPTER_ROOT` to that archive's `python/` directory.
 
 ```bash
 docker run --rm -v "$PWD":/workspace \
@@ -197,8 +197,9 @@ Adapters communicate with the Rust runner through the versioned `memoryproof.ada
 Each run emits an offline-readable package:
 
 ```text
-manifest.json       format, run, adapter mode, protocol, and bundle hash
+manifest.json       format, run, adapter mode, protocol, and declared files
 scenario.lock.json  redacted, frozen scenario snapshot
+scenario.lock.yml   the same frozen snapshot in the requested YAML form
 events.ndjson       ordered method journal with safe request IDs
 results.json        machine-readable assertions and profile states
 report.html         single-file bilingual report
@@ -206,6 +207,12 @@ junit.xml           CI-native test report
 checksums.sha256    per-file SHA-256 integrity list
 bundle.hash         hash of the checksum manifest
 ```
+
+Use `memoryproof doctor --allow-network` only when a provider endpoint is
+intentionally reachable, and use `memoryproof expand ... --allow-network` only
+when probe generation is configured to call a non-loopback OpenAI-compatible
+endpoint. The generated probes are frozen before a run; the model never makes
+the final pass/fail decision.
 
 By default, payloads are reduced to hashes, lengths, types, and safe structural summaries. `--allow-network` authorizes a remote backend; it does not disable redaction.
 

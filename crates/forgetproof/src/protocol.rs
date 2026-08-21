@@ -4,6 +4,7 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Write};
 use std::ops::{Deref, DerefMut};
+use std::path::PathBuf;
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::thread;
@@ -139,17 +140,14 @@ impl AdapterClient {
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit());
 
-        if let Ok(current_dir) = std::env::current_dir() {
-            let package_root = current_dir.join("python");
-            if package_root.join("forgetproof_adapters").is_dir() {
-                let mut paths = vec![package_root];
-                if let Some(existing) = std::env::var_os("PYTHONPATH") {
-                    paths.extend(std::env::split_paths(&existing));
-                }
-                let joined = std::env::join_paths(paths)
-                    .context("failed to construct adapter PYTHONPATH")?;
-                command.env("PYTHONPATH", joined);
-            }
+        let mut paths = adapter_python_paths();
+        if let Some(existing) = std::env::var_os("PYTHONPATH") {
+            paths.extend(std::env::split_paths(&existing));
+        }
+        if !paths.is_empty() {
+            let joined =
+                std::env::join_paths(paths).context("failed to construct adapter PYTHONPATH")?;
+            command.env("PYTHONPATH", joined);
         }
 
         let mut child = command
@@ -275,4 +273,28 @@ impl Drop for AdapterClient {
         let _ = self.child.kill();
         let _ = self.child.wait();
     }
+}
+
+fn adapter_python_paths() -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Some(explicit) = std::env::var_os("MEMORYPROOF_ADAPTER_ROOT") {
+        paths.push(PathBuf::from(explicit));
+    }
+    if let Ok(current_dir) = std::env::current_dir() {
+        paths.push(current_dir.join("python"));
+    }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(parent) = executable.parent() {
+            paths.push(parent.join("python"));
+        }
+    }
+    paths
+        .into_iter()
+        .filter(|path| path.join("forgetproof_adapters").is_dir())
+        .fold(Vec::new(), |mut unique, path| {
+            if !unique.contains(&path) {
+                unique.push(path);
+            }
+            unique
+        })
 }

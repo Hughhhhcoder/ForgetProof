@@ -459,6 +459,7 @@ pub fn run_scenario(
         files: vec![
             "manifest.json".to_owned(),
             "scenario.lock.json".to_owned(),
+            "scenario.lock.yml".to_owned(),
             "events.ndjson".to_owned(),
             "results.json".to_owned(),
             "report.html".to_owned(),
@@ -478,7 +479,9 @@ pub fn doctor_adapter(
     name: &str,
     mode: &str,
     config: &BTreeMap<String, String>,
+    allow_network: bool,
 ) -> Result<Capabilities> {
+    enforce_adapter_network_policy(name, config, allow_network)?;
     let mut client = AdapterClient::spawn(name, mode, config)?;
     client.hello(3_000)?;
     let capabilities = client.capabilities(3_000)?;
@@ -513,12 +516,10 @@ allow_network = false
     Ok(())
 }
 
-pub fn expand_scenario(input: &Path, output: &Path) -> Result<()> {
+pub fn expand_scenario(input: &Path, output: &Path, allow_network: bool) -> Result<()> {
     let (mut scenario, _) = load_scenario(input)?;
-    if std::env::var("MEMORYPROOF_LLM_BASE_URL").is_ok()
-        || std::env::var("FORGETPROOF_LLM_BASE_URL").is_ok()
-        || std::env::var("OPENAI_BASE_URL").is_ok()
-    {
+    if let Some(base_url) = llm_base_url() {
+        enforce_url_network_policy("LLM base URL", &base_url, allow_network)?;
         scenario = expand_with_compatible_llm(&scenario)?;
     }
     let existing = scenario
@@ -587,15 +588,12 @@ fn expand_with_compatible_llm(scenario: &Scenario) -> Result<Scenario> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit());
-    if let Ok(current_dir) = std::env::current_dir() {
-        let package_root = current_dir.join("python");
-        if package_root.join("forgetproof_adapters").is_dir() {
-            let mut paths = vec![package_root];
-            if let Some(existing) = std::env::var_os("PYTHONPATH") {
-                paths.extend(std::env::split_paths(&existing));
-            }
-            command.env("PYTHONPATH", std::env::join_paths(paths)?);
-        }
+    let mut paths = adapter_python_paths();
+    if let Some(existing) = std::env::var_os("PYTHONPATH") {
+        paths.extend(std::env::split_paths(&existing));
+    }
+    if !paths.is_empty() {
+        command.env("PYTHONPATH", std::env::join_paths(paths)?);
     }
     let mut child = command
         .spawn()
@@ -615,7 +613,19 @@ fn expand_with_compatible_llm(scenario: &Scenario) -> Result<Scenario> {
 }
 
 fn enforce_network_policy(scenario: &Scenario, allow_network: bool) -> Result<()> {
-    if scenario.spec.adapter.name.starts_with("reference-") {
+    enforce_adapter_network_policy(
+        &scenario.spec.adapter.name,
+        &scenario.spec.adapter.config,
+        allow_network,
+    )
+}
+
+fn enforce_adapter_network_policy(
+    adapter_name: &str,
+    config: &BTreeMap<String, String>,
+    allow_network: bool,
+) -> Result<()> {
+    if adapter_name.starts_with("reference-") {
         return Ok(());
     }
     if allow_network
@@ -624,14 +634,11 @@ fn enforce_network_policy(scenario: &Scenario, allow_network: bool) -> Result<()
     {
         return Ok(());
     }
-    let base_url = scenario
-        .spec
-        .adapter
-        .config
+    let base_url = config
         .get("base_url")
         .cloned()
         .or_else(|| {
-            let env_name = match scenario.spec.adapter.name.as_str() {
+            let env_name = match adapter_name {
                 "mem0" => "MEM0_BASE_URL",
                 "letta" => "LETTA_BASE_URL",
                 "zep" => "ZEP_BASE_URL",
@@ -645,10 +652,7 @@ fn enforce_network_policy(scenario: &Scenario, allow_network: bool) -> Result<()
     let mut remote_endpoint =
         (!base_url.is_empty() && !is_loopback_url(&base_url)).then_some("base_url".to_owned());
     if remote_endpoint.is_none() {
-        remote_endpoint = scenario
-            .spec
-            .adapter
-            .config
+        remote_endpoint = config
             .iter()
             .filter(|(key, value)| is_endpoint_key(key) && is_absolute_http_url(value))
             .find(|(_, value)| !is_loopback_url(value))
@@ -657,10 +661,56 @@ fn enforce_network_policy(scenario: &Scenario, allow_network: bool) -> Result<()
     if let Some(endpoint) = remote_endpoint {
         bail!(
             "network access is disabled for endpoint '{}'; pass --allow-network for '{}' or configure loopback endpoints",
-            endpoint, scenario.spec.adapter.name
+            endpoint, adapter_name
         );
     }
     Ok(())
+}
+
+fn llm_base_url() -> Option<String> {
+    std::env::var("MEMORYPROOF_LLM_BASE_URL")
+        .or_else(|_| std::env::var("FORGETPROOF_LLM_BASE_URL"))
+        .or_else(|_| std::env::var("OPENAI_BASE_URL"))
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+}
+
+fn adapter_python_paths() -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Some(explicit) = std::env::var_os("MEMORYPROOF_ADAPTER_ROOT") {
+        paths.push(PathBuf::from(explicit));
+    }
+    if let Ok(current_dir) = std::env::current_dir() {
+        paths.push(current_dir.join("python"));
+    }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(parent) = executable.parent() {
+            paths.push(parent.join("python"));
+        }
+    }
+    paths
+        .into_iter()
+        .filter(|path| path.join("forgetproof_adapters").is_dir())
+        .fold(Vec::new(), |mut unique, path| {
+            if !unique.contains(&path) {
+                unique.push(path);
+            }
+            unique
+        })
+}
+
+fn enforce_url_network_policy(label: &str, url: &str, allow_network: bool) -> Result<()> {
+    if allow_network
+        || std::env::var("MEMORYPROOF_ALLOW_NETWORK").as_deref() == Ok("1")
+        || std::env::var("FORGETPROOF_ALLOW_NETWORK").as_deref() == Ok("1")
+        || is_loopback_url(url)
+    {
+        return Ok(());
+    }
+    bail!(
+        "network access is disabled for {}; pass --allow-network or configure a loopback endpoint",
+        label
+    );
 }
 
 fn is_endpoint_key(key: &str) -> bool {

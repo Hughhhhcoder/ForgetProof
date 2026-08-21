@@ -37,11 +37,11 @@ jobs:
       - run: cargo build --release --bins
       - name: Package Unix binaries
         if: runner.os != 'Windows'
-        run: tar -czf "${{ matrix.archive }}" -C target/release memoryproof forgetproof
+        run: tar -czf "${{ matrix.archive }}" -C target/release memoryproof forgetproof -C "$GITHUB_WORKSPACE" python/forgetproof_adapters
       - name: Package Windows binaries
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path target/release/memoryproof.exe,target/release/forgetproof.exe -DestinationPath "${{ matrix.archive }}"
+        run: Compress-Archive -Path target/release/memoryproof.exe,target/release/forgetproof.exe,python/forgetproof_adapters -DestinationPath "${{ matrix.archive }}"
       - uses: actions/upload-artifact@v7
         with:
           name: binary-${{ matrix.name }}

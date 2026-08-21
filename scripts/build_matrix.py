@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "conformance" / "evidence"
 OUTPUT = ROOT / "site" / "matrix.json"
+PUBLIC_EVIDENCE = ROOT / "site" / "evidence"
 ALLOWED_STATUSES = {"PASS", "FAIL", "SKIP", "UNKNOWN"}
 ALLOWED_FORMATS = {"memoryproof.bundle/v1", "forgetproof.bundle/v1alpha1"}
 
@@ -54,6 +56,7 @@ def verify_bundle(directory: Path, manifest: dict) -> str:
 
 def main() -> None:
     rows: list[dict] = []
+    validated_directories: list[Path] = []
     if SOURCE.exists():
         for directory in sorted(path for path in SOURCE.iterdir() if path.is_dir()):
             manifest_path = directory / "manifest.json"
@@ -63,6 +66,7 @@ def main() -> None:
             manifest = json.loads(manifest_path.read_text())
             result = json.loads(results_path.read_text())
             bundle_hash = verify_bundle(directory, manifest)
+            validated_directories.append(directory)
             statuses = {item.get("status", "UNKNOWN") for item in result.get("profiles", [])}
             if not statuses:
                 statuses = {result.get("status", "UNKNOWN")}
@@ -91,6 +95,12 @@ def main() -> None:
                         "source": manifest.get("source", "maintainer-reproduced"),
                     }
                 )
+    if PUBLIC_EVIDENCE.exists():
+        shutil.rmtree(PUBLIC_EVIDENCE)
+    PUBLIC_EVIDENCE.mkdir(parents=True, exist_ok=True)
+    for directory in validated_directories:
+        shutil.copytree(directory, PUBLIC_EVIDENCE / directory.name)
+
     OUTPUT.write_text(
         json.dumps(
             {

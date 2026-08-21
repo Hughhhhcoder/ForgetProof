@@ -42,9 +42,11 @@ pub fn write_bundle(
 ) -> Result<String> {
     fs::create_dir_all(directory)?;
 
-    write_json(
-        &directory.join("scenario.lock.json"),
-        &redact_scenario(scenario),
+    let redacted_scenario = redact_scenario(scenario);
+    write_json(&directory.join("scenario.lock.json"), &redacted_scenario)?;
+    fs::write(
+        directory.join("scenario.lock.yml"),
+        serde_yaml::to_string(&redacted_scenario)?,
     )?;
 
     let events_path = directory.join("events.ndjson");
