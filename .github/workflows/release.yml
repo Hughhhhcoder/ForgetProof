@@ -115,6 +115,11 @@ jobs:
           labels: |
             org.opencontainers.image.source=https://github.com/Hughhhhcoder/MemoryProof
             org.opencontainers.image.description=Evidence-driven memory assurance for AI agents
+          annotations: |
+            manifest:org.opencontainers.image.title=MemoryProof
+            manifest:org.opencontainers.image.description=Evidence-driven memory assurance for AI agents
+            manifest:org.opencontainers.image.source=https://github.com/Hughhhhcoder/MemoryProof
+            manifest:org.opencontainers.image.licenses=Apache-2.0
           provenance: mode=max
           sbom: true
 
