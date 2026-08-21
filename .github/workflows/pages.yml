@@ -1,8 +1,9 @@
-name: Build conformance matrix / 构建认证矩阵
+name: Publish Memory Assurance Matrix / 发布记忆保证矩阵
 
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - "conformance/**"
       - "scripts/build_matrix.py"
@@ -16,19 +17,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  matrix:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python scripts/build_matrix.py
+      - name: Build and verify matrix
+        run: |
+          python scripts/build_matrix.py
+          python -m json.tool site/matrix.json >/dev/null
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
   deploy:
-    needs: matrix
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       pages: write

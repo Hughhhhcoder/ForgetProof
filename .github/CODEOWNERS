@@ -1,2 +1,5 @@
 # Default reviewer for project-wide changes.
 * @Hughhhhcoder
+/.github/ @Hughhhhcoder
+/crates/ @Hughhhhcoder
+/python/ @Hughhhhcoder

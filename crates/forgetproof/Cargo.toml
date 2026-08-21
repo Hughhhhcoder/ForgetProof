@@ -1,9 +1,9 @@
 [package]
-name = "forgetproof"
+name = "memoryproof"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Evidence-driven conformance tests for AI memory erasure / 面向 AI 记忆遗忘的证据驱动认证测试"
+description = "Assurance tests for AI agent memory / AI Agent 记忆保障测试"
 
 [dependencies]
 anyhow.workspace = true
@@ -14,5 +14,9 @@ serde_yaml.workspace = true
 sha2.workspace = true
 
 [[bin]]
-name = "forgetproof"
+name = "memoryproof"
 path = "src/main.rs"
+
+[[bin]]
+name = "forgetproof"
+path = "src/forgetproof.rs"

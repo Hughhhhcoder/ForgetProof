@@ -10,15 +10,27 @@ from typing import Any
 
 def main() -> None:
     scenario = json.load(sys.stdin)
-    base_url = os.environ.get("FORGETPROOF_LLM_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
-    api_key = os.environ.get("FORGETPROOF_LLM_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
-    model = os.environ.get("FORGETPROOF_LLM_MODEL") or os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+    base_url = (
+        os.environ.get("MEMORYPROOF_LLM_BASE_URL")
+        or os.environ.get("FORGETPROOF_LLM_BASE_URL")
+        or os.environ.get("OPENAI_BASE_URL")
+    )
+    api_key = (
+        os.environ.get("MEMORYPROOF_LLM_API_KEY")
+        or os.environ.get("FORGETPROOF_LLM_API_KEY")
+        or os.environ.get("OPENAI_API_KEY", "")
+    )
+    model = (
+        os.environ.get("MEMORYPROOF_LLM_MODEL")
+        or os.environ.get("FORGETPROOF_LLM_MODEL")
+        or os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+    )
     if not base_url:
         json.dump(scenario, sys.stdout, separators=(",", ":"))
         return
 
     prompt = {
-        "instruction": "Generate additional deterministic recall probes for this ForgetProof scenario.",
+        "instruction": "Generate additional deterministic recall probes for this MemoryProof scenario.",
         "rules": [
             "Return a JSON array only.",
             "Each item must contain id, fixture, kind, query.",
@@ -75,6 +87,7 @@ def main() -> None:
                 "fixture": str(variant["fixture"]),
                 "kind": str(variant["kind"]),
                 "query": str(variant["query"]),
+                "as_subject": str(variant.get("as_subject", "")),
             }
         )
         existing.add(str(variant["id"]))

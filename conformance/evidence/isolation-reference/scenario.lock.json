@@ -1,0 +1,108 @@
+{
+  "apiVersion": "memoryproof.dev/v1",
+  "kind": "AssuranceScenario",
+  "metadata": {
+    "description": "Two subjects must not be able to observe one another's canaries.",
+    "name": "isolation-reference"
+  },
+  "spec": {
+    "adapter": {
+      "config": {},
+      "mode": "clean",
+      "name": "reference-clean"
+    },
+    "erase": {
+      "intent": "object_delete",
+      "scope": "",
+      "target": "target"
+    },
+    "fixtures": [
+      {
+        "content": "sha256:1db86affcda819079ec9bc5bf8fd6c8407956edcffb7402f99bfb34351868a1d len:35",
+        "id": "target",
+        "kind": "memory",
+        "namespace": "",
+        "role": "target",
+        "subject": "target-subject",
+        "target": false
+      },
+      {
+        "content": "sha256:5b84565ed2e8964ffb121bb4dbd05ee39cce47406fc9345ff1d3b6f0189d4154 len:36",
+        "id": "control",
+        "kind": "memory",
+        "namespace": "",
+        "role": "control",
+        "subject": "control-subject",
+        "target": false
+      }
+    ],
+    "isolation": {
+      "agent": "",
+      "control_subject": "control-subject",
+      "scope": "memoryproof-run",
+      "subject": "",
+      "target_subject": "target-subject",
+      "thread": ""
+    },
+    "privacy": {
+      "raw_payloads": false
+    },
+    "probes": {
+      "after": [
+        {
+          "as_subject": "control-subject",
+          "fixture": "target",
+          "id": "target-search-from-control",
+          "kind": "semantic",
+          "query": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 len:0"
+        },
+        {
+          "as_subject": "target-subject",
+          "fixture": "control",
+          "id": "control-search-from-target",
+          "kind": "semantic",
+          "query": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 len:0"
+        }
+      ],
+      "before": [
+        {
+          "as_subject": "target-subject",
+          "fixture": "target",
+          "id": "target-from-target",
+          "kind": "exact",
+          "query": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 len:0"
+        },
+        {
+          "as_subject": "control-subject",
+          "fixture": "target",
+          "id": "target-from-control",
+          "kind": "exact",
+          "query": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 len:0"
+        },
+        {
+          "as_subject": "control-subject",
+          "fixture": "control",
+          "id": "control-from-control",
+          "kind": "exact",
+          "query": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 len:0"
+        },
+        {
+          "as_subject": "target-subject",
+          "fixture": "control",
+          "id": "control-from-target",
+          "kind": "exact",
+          "query": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 len:0"
+        }
+      ]
+    },
+    "profiles": [
+      "isolation.read",
+      "isolation.search"
+    ],
+    "settle": {
+      "interval_ms": 25,
+      "timeout_ms": 5000
+    },
+    "suite": "isolation"
+  }
+}

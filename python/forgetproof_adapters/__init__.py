@@ -1,3 +1,7 @@
-"""Official and reference adapters for ForgetProof."""
+"""Official and reference adapters for MemoryProof.
 
-PROTOCOL_VERSION = "forgetproof.adapter/v1alpha1"
+The import path remains forgetproof_adapters for v0.x compatibility; the
+published distribution is memoryproof-adapters.
+"""
+
+PROTOCOL_VERSION = "memoryproof.adapter/v1"

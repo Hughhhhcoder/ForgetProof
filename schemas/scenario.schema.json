@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://forgetproof.dev/schema/scenario/v1alpha1.json",
-  "title": "ForgetProof Erasure Scenario",
+  "$id": "https://memoryproof.dev/schema/scenario/v1.json",
+  "title": "MemoryProof Assurance Scenario",
+  "description": "A deterministic scenario for erasure or tenant-isolation assurance checks.",
   "type": "object",
-  "required": ["apiVersion", "metadata", "spec"],
+  "required": ["apiVersion", "kind", "metadata", "spec"],
   "properties": {
-    "apiVersion": { "const": "forgetproof.dev/v1alpha1" },
-    "kind": { "type": "string" },
+    "apiVersion": { "const": "memoryproof.dev/v1" },
+    "kind": { "const": "AssuranceScenario" },
     "metadata": {
       "type": "object",
       "required": ["name"],
@@ -18,8 +19,9 @@
     },
     "spec": {
       "type": "object",
-      "required": ["adapter", "fixtures", "erase", "probes"],
+      "required": ["suite", "adapter", "fixtures", "settle", "probes", "profiles"],
       "properties": {
+        "suite": { "enum": ["erasure", "isolation"] },
         "adapter": {
           "type": "object",
           "required": ["name"],
@@ -33,7 +35,9 @@
         "isolation": {
           "type": "object",
           "properties": {
-            "scope": { "type": "string" },
+            "scope": { "type": "string", "minLength": 1 },
+            "target_subject": { "type": "string", "minLength": 1 },
+            "control_subject": { "type": "string", "minLength": 1 },
             "subject": { "type": "string" },
             "agent": { "type": "string" },
             "thread": { "type": "string" }
@@ -42,14 +46,16 @@
         },
         "fixtures": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 2,
           "items": {
             "type": "object",
-            "required": ["id", "content"],
+            "required": ["id", "role", "content"],
             "properties": {
               "id": { "type": "string", "minLength": 1 },
+              "role": { "enum": ["target", "control"] },
               "content": { "type": "string", "minLength": 1 },
-              "target": { "type": "boolean" },
+              "subject": { "type": "string", "minLength": 1 },
+              "namespace": { "type": "string" },
               "kind": { "type": "string" }
             },
             "additionalProperties": false
@@ -67,7 +73,8 @@
           "type": "object",
           "properties": {
             "intent": { "enum": ["object_delete", "subject_erase", "access_revoke", "derived_purge"] },
-            "target": { "type": "string" }
+            "target": { "type": "string", "minLength": 1 },
+            "scope": { "type": "string" }
           },
           "additionalProperties": false
         },
@@ -75,35 +82,56 @@
           "type": "object",
           "required": ["before", "after"],
           "properties": {
-            "before": { "$ref": "#/$defs/probes" },
-            "after": { "$ref": "#/$defs/probes" }
+            "before": { "$ref": "#/$defs/probeList" },
+            "after": { "$ref": "#/$defs/probeList" }
           },
           "additionalProperties": false
         },
         "profiles": {
           "type": "array",
-          "items": { "enum": ["FP-Object", "FP-Scope", "FP-Derived", "FP-Agent"] }
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "erasure.object",
+              "erasure.scope",
+              "erasure.derived",
+              "erasure.agent",
+              "isolation.read",
+              "isolation.search",
+              "isolation.agent"
+            ]
+          }
         },
         "privacy": {
           "type": "object",
-          "properties": { "raw_payloads": { "type": "boolean", "default": false } },
+          "properties": {
+            "raw_payloads": { "type": "boolean", "default": false }
+          },
           "additionalProperties": false
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "suite": { "const": "erasure" } } },
+          "then": { "required": ["erase"] }
+        }
+      ]
     }
   },
   "$defs": {
-    "probes": {
+    "probeList": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
         "required": ["id", "fixture"],
-          "properties": {
+        "properties": {
           "id": { "type": "string", "minLength": 1 },
           "fixture": { "type": "string", "minLength": 1 },
           "kind": { "enum": ["exact", "lexical", "semantic", "inspect", "agent"] },
-          "query": { "type": "string" }
+          "query": { "type": "string" },
+          "as_subject": { "type": "string" }
         },
         "additionalProperties": false
       }

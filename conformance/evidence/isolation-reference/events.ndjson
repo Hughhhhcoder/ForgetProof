@@ -1,0 +1,13 @@
+{"seq":1,"at_ms":1787321604319,"phase":"prepare","method":"hello","status":"PASS","details":{"protocol":"memoryproof.adapter/v1"}}
+{"seq":2,"at_ms":1787321604319,"phase":"prepare","method":"capabilities","status":"PASS","details":{"adapter":"reference-clean","backend":"memoryproof-reference","version":"1.0.0"}}
+{"seq":3,"at_ms":1787321604319,"phase":"run","method":"prepare","status":"PASS","details":{}}
+{"seq":4,"at_ms":1787321604319,"phase":"run","method":"ingest","status":"PASS","details":{}}
+{"seq":5,"at_ms":1787321604319,"phase":"run","method":"ingest","status":"PASS","details":{}}
+{"seq":6,"at_ms":1787321604319,"phase":"after-ingest","method":"settle","status":"PASS","details":{"state":"stable"}}
+{"seq":7,"at_ms":1787321604319,"phase":"isolation","method":"probe","status":"PASS","details":{"found":"true","probe":"target-from-target"}}
+{"seq":8,"at_ms":1787321604320,"phase":"isolation","method":"probe","status":"PASS","details":{"found":"false","probe":"target-from-control"}}
+{"seq":9,"at_ms":1787321604320,"phase":"isolation","method":"probe","status":"PASS","details":{"found":"true","probe":"control-from-control"}}
+{"seq":10,"at_ms":1787321604320,"phase":"isolation","method":"probe","status":"PASS","details":{"found":"false","probe":"control-from-target"}}
+{"seq":11,"at_ms":1787321604320,"phase":"isolation","method":"probe","status":"PASS","details":{"found":"false","probe":"target-search-from-control"}}
+{"seq":12,"at_ms":1787321604320,"phase":"isolation","method":"probe","status":"PASS","details":{"found":"false","probe":"control-search-from-target"}}
+{"seq":13,"at_ms":1787321604320,"phase":"cleanup","method":"cleanup","status":"PASS","details":{}}

@@ -3,14 +3,27 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "forgetproof-adapters"
-version = "0.1.0"
-description = "Python NDJSON adapters for ForgetProof / ForgetProof 的 Python NDJSON 适配器"
+name = "memoryproof-adapters"
+version = "1.0.0"
+description = "Python NDJSON adapters for MemoryProof / MemoryProof 的 Python NDJSON 适配器"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
-authors = [{ name = "ForgetProof contributors" }]
+authors = [{ name = "MemoryProof contributors" }]
+keywords = ["ai", "agents", "memory", "privacy", "testing", "erasure"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Testing",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://hughhhhcoder.github.io/MemoryProof/"
+Repository = "https://github.com/Hughhhhcoder/MemoryProof"
+Documentation = "https://hughhhhcoder.github.io/MemoryProof/"
 
 [tool.setuptools.packages.find]
 where = ["python"]

@@ -1,14 +1,14 @@
-# ForgetProof
+# MemoryProof
 
-> Prove your AI forgot.
+> Prove what your AI forgot.
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
 <p align="center">
-  <a href="https://github.com/Hughhhhcoder/ForgetProof/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://img.shields.io/github/actions/workflow/status/Hughhhhcoder/ForgetProof/ci.yml?branch=main&label=CI&logo=github" alt="CI status" /></a>
-  <a href="https://hughhhhcoder.github.io/ForgetProof/"><img src="https://img.shields.io/badge/live-conformance%20matrix-0ea5e9?logo=googlechrome&logoColor=white" alt="Live conformance matrix" /></a>
-  <a href="https://github.com/Hughhhhcoder/ForgetProof/releases"><img src="https://img.shields.io/github/v/release/Hughhhhcoder/ForgetProof?display_name=tag&sort=semver&logo=github" alt="Latest release" /></a>
-  <a href="https://github.com/Hughhhhcoder/ForgetProof/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Hughhhhcoder/ForgetProof?logo=apache" alt="Apache-2.0 license" /></a>
+  <a href="https://github.com/Hughhhhcoder/MemoryProof/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://img.shields.io/github/actions/workflow/status/Hughhhhcoder/MemoryProof/ci.yml?branch=main&label=CI&logo=github" alt="CI status" /></a>
+  <a href="https://hughhhhcoder.github.io/MemoryProof/"><img src="https://img.shields.io/badge/live-memory%20assurance%20matrix-0ea5e9?logo=googlechrome&logoColor=white" alt="Live MemoryProof matrix" /></a>
+  <a href="https://github.com/Hughhhhcoder/MemoryProof/releases"><img src="https://img.shields.io/github/v/release/Hughhhhcoder/MemoryProof?display_name=tag&sort=semver&logo=github" alt="Latest release" /></a>
+  <a href="https://github.com/Hughhhhcoder/MemoryProof/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Hughhhhcoder/MemoryProof?logo=apache" alt="Apache-2.0 license" /></a>
 </p>
 
 <p align="center">
@@ -16,110 +16,104 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776ab?logo=python&logoColor=white" alt="Python 3.11 or newer" />
   <img src="https://img.shields.io/badge/privacy-local--first-10b981?logo=shield&logoColor=white" alt="Local-first privacy" />
   <img src="https://img.shields.io/badge/evidence-SHA--256-f59e0b?logo=datadog&logoColor=white" alt="SHA-256 evidence" />
+  <img src="https://img.shields.io/badge/status-v1%20preview-8b5cf6?logo=rocket" alt="v1 preview" />
 </p>
 
 <p align="center">
-  🧪 <a href="#quickstart">Try it in 60 seconds</a> · 🔍 <a href="#see-the-difference-in-30-seconds">See the proof</a> · 🌐 <a href="https://hughhhhcoder.github.io/ForgetProof/">Open the live matrix</a>
+  🧪 <a href="#quickstart">Try it in 60 seconds</a> · 🔍 <a href="#the-proof-in-one-screen">See the proof</a> · 🧭 <a href="https://hughhhhcoder.github.io/MemoryProof/">Open the live matrix</a>
 </p>
 
-![ForgetProof hero: a synthetic canary disappears from a memory graph while an evidence ledger verifies the change](assets/forgetproof-hero.png)
+![MemoryProof: a synthetic canary leaves an observable memory graph while a verification ring and evidence ledger record the boundary](assets/memoryproof-hero.png)
 
-ForgetProof is an open-source test runner for one uncomfortable question:
+MemoryProof is an open-source **memory assurance** toolkit for AI agents. It tests a question that a successful `DELETE` response cannot answer:
 
-> When an AI memory system says “deleted”, can you show that the information is no longer observable?
+> Can the information still be observed through any path the backend exposes?
 
-It creates isolated synthetic canaries, asks a memory or Agent backend to erase them, checks raw and derived storage boundaries, and writes evidence that can be rerun locally or in CI.
+It creates isolated synthetic canaries, runs deterministic before/after probes, checks raw and derived boundaries, and emits an offline evidence bundle that developers can review, verify, and run in CI.
 
 > [!IMPORTANT]
-> `DELETE 200 OK` is an API response. ForgetProof tests the stronger claim: **the canary is no longer observable through the paths you can inspect**.
+> `DELETE 200 OK` is an API response. MemoryProof tests the stronger, observable claim: **the canary is no longer retrievable through the configured boundary**.
 
-## Why this exists
+## Why MemoryProof?
 
-```text
-DELETE 200 OK  !=  the canary is no longer observable
-```
+Agent memory is rarely one table. A single fact can be copied into a raw record, summary, embedding, graph node, cache, block, or working context. A delete endpoint may remove one representation while another still answers a search query.
 
-Memory systems may keep information in more than one place: the original record, a summary, an embedding, a graph node, a cache, or an Agent’s working context. ForgetProof makes those boundaries visible and reports what was actually checked.
+MemoryProof makes that gap concrete with a controlled experiment:
 
-It does not store your production memories. It tests a controlled namespace with synthetic data.
-
-## 🧠 The problem in one glance
-
-| What a backend may say | What may still be alive | What ForgetProof checks |
+| 🧾 What an API may report | 🕳️ What can remain | 🔬 What MemoryProof records |
 | --- | --- | --- |
-| ✅ `DELETE 200 OK` | 📝 A summary still contains the canary | 🔎 Deterministic before/after probes |
-| ✅ The raw row is gone | 🧭 An index, embedding, or graph edge still recalls it | 🧬 Derived-artifact inspection |
-| ✅ The Agent cannot see one block | 💬 Another Agent path still leaks the fact | 🤖 Optional black-box Agent query |
+| `DELETE 200 OK` | A summary still contains the canary | Deterministic pre/post probes |
+| Raw row is gone | An index, vector, or graph edge still recalls it | Derived-artifact inspection |
+| One block was detached | Another Agent path can still leak the fact | Optional black-box Agent query |
+| “Delete all” was accepted | An unrelated control subject disappeared too | Isolation and scope assertions |
 
-The goal is not to punish a backend for being incomplete. The goal is to make the boundary visible, reproducible, and honest.
+The goal is not to assign a vendor a simplistic score. The goal is to make **what was checked, what passed, and what cannot be observed** explicit.
 
-## How it works
+## The proof in one screen
 
 ```mermaid
 flowchart LR
-    A["Scenario + canary"] --> B["Rust runner"]
-    B --> C["NDJSON adapter"]
-    C --> D["Mem0 / Letta / Zep"]
+    A["Scenario + synthetic canaries"] --> B["Rust runner"]
+    B --> C["Versioned NDJSON adapter"]
+    C --> D["Mem0 · Letta · Zep"]
     B --> E["Before probes"]
-    D --> F["Erase request"]
-    F --> G["After probes"]
+    D --> F["Erase / isolate"]
+    F --> G["Settle + after probes"]
     E --> H["Evidence bundle"]
     G --> H
-    H --> I["HTML / JUnit / CI"]
+    H --> I["HTML · JUnit · CI · Matrix"]
 ```
 
-The runner proves that the canary was visible before deletion, performs a scoped erase, waits for the backend to settle, and checks the target plus a control fixture afterward. Unsupported inspection is reported as `UNKNOWN`, never as a pass.
+1. **Seed a canary** that is unique, synthetic, and safe to send to a test namespace.
+2. **Prove the precondition**: the target canary is observable before deletion.
+3. **Erase or isolate** only resources owned by this run.
+4. **Wait for asynchronous writes** to settle; a timeout becomes `UNKNOWN`, not a false pass.
+5. **Probe raw, derived, Agent, and control paths** with deterministic rules.
+6. **Seal the evidence** with sorted SHA-256 checksums and a bundle hash.
 
-## 🔍 See the difference in 30 seconds
+## The difference it makes
 
-|  | Without ForgetProof | With ForgetProof |
+|  | ❌ “Trust the endpoint” | ✅ MemoryProof |
 | --- | --- | --- |
-| **Evidence** | Trust a `200 OK` response | 📦 Keep a verifiable evidence bundle |
-| **Coverage** | Check the object you deleted | 🧠 Check raw, summary, vector, graph, cache, and Agent paths that are observable |
-| **Regression testing** | Run a one-off script | 🔁 Re-run the same locked scenario in CI |
-| **Uncertainty** | Turn missing APIs into “probably fine” | ⚠️ Report `UNKNOWN` when the backend cannot support a claim |
+| Evidence | A green HTTP response | A portable bundle with events, results, report, JUnit, and hashes |
+| Coverage | The object named in the delete call | Every observable boundary advertised by the adapter |
+| Safety | A script may delete the wrong data | Synthetic canaries plus target/control isolation |
+| Regression testing | A one-off manual check | A locked scenario in local runs and pull requests |
+| Uncertainty | Missing APIs become “probably fine” | `UNKNOWN`, `SKIP`, and `OUT OF SCOPE` stay visible |
 
-```mermaid
-flowchart LR
-    A["Before delete<br/>canary is recallable"] --> B["DELETE 200 OK"]
-    B --> C{"After: deterministic probes"}
-    C -->|"clean"| D["✅ PASS<br/>no observable path"]
-    C -->|"leaky"| E["❌ FAIL<br/>summary / index / graph remains"]
-```
+### A failure is a useful result
 
-### A failure is useful
-
-The deliberately leaky reference backend is part of the demo. It deletes the raw item but leaves a derived artifact, so ForgetProof must fail at the derived layer:
+The repository includes a deliberately leaky backend. It deletes the raw item but leaves a derived artifact. MemoryProof must fail at the derived boundary:
 
 ```text
 status: FAIL
-profile: FP-Derived
+profile: erasure.derived
 probe: target-derived-after
 reason: the unique canary is still observable in a derived artifact
 ```
 
-That is the product promise in miniature: a vague “memory problem” becomes a named, reviewable, reproducible failure.
+This is the core experience: an ambiguous memory concern becomes a named, reproducible, reviewable regression.
 
-## 🚀 Quickstart
+## Quickstart
 
 Requirements: Rust stable and Python 3.11+.
 
-Choose the path that fits your workflow:
-
-- 🛠️ **From source:** run the commands below with Rust stable.
-- 📥 **Released binary:** download the archive for Linux, macOS, or Windows from [Releases](https://github.com/Hughhhhcoder/ForgetProof/releases).
-- 🐳 **Docker:** `docker run --rm -v "$PWD":/workspace ghcr.io/hughhhhcoder/forgetproof:v0.1.0 run /workspace/examples/reference-clean.yml --output /workspace/.forgetproof/runs`
+### Run from source
 
 ```bash
+git clone https://github.com/Hughhhhcoder/MemoryProof.git
+cd MemoryProof
+
 cargo run -- adapters list
 cargo run -- run examples/reference-clean.yml
 ```
 
-The clean reference scenario exits `0` and writes a bundle under `.forgetproof/runs/`. Verify it:
+The clean reference scenario exits `0` and writes a bundle under `.memoryproof/runs/`. Verify and open it offline:
 
 ```bash
-cargo run -- verify .forgetproof/runs/<run-id>
-open .forgetproof/runs/<run-id>/report.html
+cargo run -- verify .memoryproof/runs/<run-id>
+open .memoryproof/runs/<run-id>/report.html       # macOS
+# xdg-open .memoryproof/runs/<run-id>/report.html # Linux
 ```
 
 Now run the intentionally leaky backend:
@@ -128,105 +122,155 @@ Now run the intentionally leaky backend:
 cargo run -- run examples/reference-leaky.yml
 ```
 
-It exits `1` because the raw item is deleted while a derived artifact remains observable. The report identifies the failing probe and profile.
+It exits `1`: the raw item disappears, but a derived artifact remains observable. That failure is expected and demonstrates the check is working.
 
-## 🏅 Conformance profiles
+### Use the released binary or container
 
-| Profile | Plain-English meaning |
+Download a platform binary from [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases), or run the public image:
+
+```bash
+docker run --rm -v "$PWD":/workspace \
+  ghcr.io/hughhhhcoder/memoryproof:1 \
+  run /workspace/examples/reference-clean.yml \
+  --output /workspace/.memoryproof/runs
+```
+
+For compatibility with the original v0.1 project, the `forgetproof` binary name and `forgetproof` Python import path remain available during the migration window.
+
+## Suites and profiles
+
+MemoryProof is an umbrella with two suites:
+
+| Suite | What it answers | Profiles |
+| --- | --- | --- |
+| 🧹 **Erasure** | Did an owned memory boundary stop exposing the target? | `erasure.object`, `erasure.scope`, `erasure.derived`, `erasure.agent` |
+| 🧱 **Isolation** | Can one subject be read without leaking another subject’s memory? | `isolation.read`, `isolation.search`, `isolation.agent` |
+
+The human-facing legacy names `FP-Object`, `FP-Scope`, `FP-Derived`, and `FP-Agent` are accepted when loading v0.1 scenarios. New scenarios use the stable names above.
+
+Every assertion is one of:
+
+| Status | Meaning |
 | --- | --- |
-| `FP-Object` | The erased target is gone from the configured recall and list probes. |
-| `FP-Scope` | The target is gone while an unrelated control fixture remains. |
-| `FP-Derived` | Observable summaries, indexes, graph artifacts, or other derivatives are gone or invalidated. |
-| `FP-Agent` | An optional Agent query no longer leaks the unique canary. |
+| `PASS` | The required observable check passed. |
+| `FAIL` | A probe found the target, a forbidden derivative, or a scope violation. |
+| `SKIP` | The selected profile is not required or is intentionally not executed. |
+| `UNKNOWN` | The adapter cannot expose enough information to make the claim. |
+| `ERROR` | The scenario, protocol, precondition, or execution failed. |
 
-Results are `PASS`, `FAIL`, `SKIP`, `UNKNOWN`, or `ERROR`. There is no misleading single score.
+There is no aggregate score. A capability boundary should be readable, not averaged away.
 
-## ✅ What ForgetProof can prove
+## What it can—and cannot—prove
 
-| It can show | It cannot claim |
+| ✅ It can show | 🚫 It does not claim |
 | --- | --- |
 | A target was observable before erase. | Provider logs were deleted. |
 | A configured API no longer returns the target. | Backups or physical storage were wiped. |
 | A visible summary, graph, index, or Agent path still leaks it. | A model’s weights were unlearned. |
-| A run’s evidence bundle was not modified after creation. | Anything outside the adapter’s observable boundary. |
+| A control subject stayed intact—or was accidentally deleted. | Anything outside the adapter’s observable boundary. |
+| The evidence bundle was not modified after creation. | The identity of the person who produced the bundle. |
 
-## 🔌 Supported adapters
+These boundaries are part of the product, not a footnote. Reports explicitly separate **proved**, **not observed**, and **out of scope**.
 
-The repository includes dependency-free Python adapters for Mem0, Letta, and Zep, plus clean and deliberately leaky reference backends. Remote access is opt-in:
+## Supported adapters
+
+| Adapter | Modes | Coverage in v1 preview |
+| --- | --- | --- |
+| `reference-clean` | local | Full erasure and isolation reference behavior |
+| `reference-leaky` | local | Deliberate derived-artifact residue |
+| `reference-overdelete` | local | Deliberate control-subject deletion |
+| `mem0` | OSS / platform / cloud | Object, scope, search, optional inspect |
+| `letta` | self-hosted / cloud | Agent, archival passage, scope, optional query |
+| `zep` | self-hosted / cloud | Episode, user scope, search, graph inspection |
+
+Remote access is opt-in. Credentials are read from environment variables and are never written into scenarios or evidence:
 
 ```bash
 MEM0_BASE_URL=https://... MEM0_API_KEY=... \
   cargo run -- run examples/mem0.yml --allow-network
 ```
 
-Credentials stay in environment variables. Endpoint paths can be overridden with `endpoint_*` adapter settings for self-hosted or version-specific deployments.
+Adapters communicate with the Rust runner through the versioned `memoryproof.adapter/v1` NDJSON protocol. Third-party adapters can implement the same contract without linking to the Rust binary.
 
-## 📦 Evidence bundle
+## Evidence you can review in a pull request
 
-Each run emits a small, offline-readable evidence package:
+Each run emits an offline-readable package:
 
 ```text
-manifest.json       run metadata and protocol version
-scenario.lock.json  redacted scenario snapshot
+manifest.json       format, run, adapter, protocol, and bundle hash
+scenario.lock.json  redacted, frozen scenario snapshot
 events.ndjson       ordered method-level journal
-results.json        machine-readable assertions
-report.html         single-file human report
-junit.xml           CI test report
-checksums.sha256    per-file integrity hashes
+results.json        machine-readable assertions and profile states
+report.html         single-file bilingual report
+junit.xml           CI-native test report
+checksums.sha256    per-file SHA-256 integrity list
 bundle.hash         hash of the checksum manifest
 ```
 
-Payloads are redacted by default to hashes, lengths, and structural summaries. `--allow-network` does not change that privacy policy.
+By default, payloads are reduced to hashes, lengths, types, and safe structural summaries. `--allow-network` authorizes a remote backend; it does not disable redaction.
 
-## 🤖 Use it in CI
+## GitHub Actions
 
-The repository provides a Docker-based GitHub Action. A scenario can fail a pull request when an erasure regression is detected and upload the evidence bundle for review.
+The repository ships a Docker-based action that uploads the evidence bundle even when the test fails:
 
 ```yaml
-name: Memory erasure
+name: Memory assurance
 
-on: [pull_request]
+on:
+  pull_request:
 
 jobs:
-  forgetproof:
+  memoryproof:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Hughhhhcoder/ForgetProof@v0.1.0
+      - uses: Hughhhhcoder/MemoryProof@v1
         with:
           scenario: examples/reference-clean.yml
 ```
 
-## 🧩 Adapter protocol
+Use a leaky or vendor-specific scenario in a separate job when you want the PR to fail on a known regression. The action exposes `bundle-path`, `status`, and `exit-code` outputs and writes a short job summary.
 
-The Rust runner starts one adapter process per run and communicates over stdout using `forgetproof.adapter/v1alpha1` NDJSON. stdout is reserved for protocol frames; diagnostics go to stderr.
+## Scenario and adapter contract
 
-Supported methods are `hello`, `capabilities`, `prepare`, `ingest`, `settle`, `probe`, `erase`, `inspect`, `agent_query`, `cleanup`, and `close`. A third-party adapter only needs to implement this protocol and advertise its capabilities.
+The stable scenario API is `memoryproof.dev/v1`. A scenario contains:
 
-## 🗺️ Learn more
+- an adapter and non-sensitive configuration references;
+- isolated target and control subjects;
+- synthetic target/control fixtures;
+- settle policy for asynchronous backends;
+- an erase intent such as `object_delete` or `subject_erase`;
+- deterministic probes and selected profiles;
+- a privacy policy for redacted evidence.
 
-- [中文说明](README.zh-CN.md)
-- [Scenario schema](schemas/scenario.schema.json)
-- [Contributing guide](CONTRIBUTING.md) · [中文贡献指南](CONTRIBUTING.zh-CN.md)
-- [Security policy](SECURITY.md) · [中文安全策略](SECURITY.zh-CN.md)
-- [Code of conduct](CODE_OF_CONDUCT.md) · [中文行为准则](CODE_OF_CONDUCT.zh-CN.md)
-- [Public conformance submissions](conformance/README.md)
-- [Conformance matrix](site/index.html)
-- [Changelog](CHANGELOG.md)
-- [Container images on GHCR](https://github.com/Hughhhhcoder/ForgetProof/pkgs/container/forgetproof)
+The adapter protocol methods are `hello`, `capabilities`, `prepare`, `ingest`, `settle`, `probe`, `erase`, `inspect`, `agent_query`, `cleanup`, and `close`. stdout is reserved for protocol frames; adapter logs go to stderr. A capability that is not implemented must become `SKIP` or `UNKNOWN`, never a fabricated pass.
 
-## Development
+## Build and contribute
 
 ```bash
 cargo fmt --all
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test
+CARGO_NET_OFFLINE=true CARGO_TARGET_DIR=/tmp/memoryproof-target \
+  cargo clippy --workspace --all-targets --all-features -- -D warnings
+CARGO_NET_OFFLINE=true CARGO_TARGET_DIR=/tmp/memoryproof-target \
+  cargo test --workspace -- --test-threads=2
 PYTHONPATH=python python3 -m unittest discover -s python/tests -v
-python3 -m compileall python
 ```
 
-The default test suite is local and credential-free. Live Mem0, Letta, and Zep checks belong in a separately authorized workflow.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and their [中文版本](CONTRIBUTING.zh-CN.md) before opening a pull request. MemoryProof is Apache-2.0 licensed and follows the DCO sign-off workflow.
 
-## License
+## Learn more
 
-Apache-2.0. See [LICENSE](LICENSE).
+- 🌐 [Live Memory Assurance Matrix](https://hughhhhcoder.github.io/MemoryProof/)
+- 🧪 [Public conformance evidence](conformance/README.md)
+- 📐 [Scenario schema](schemas/scenario.schema.json)
+- 🏗️ [Architecture and trust boundaries](docs/architecture.md) · [中文架构说明](docs/architecture.zh-CN.md)
+- 🧭 [中文说明](README.zh-CN.md)
+- 🤝 [Contributing](CONTRIBUTING.md) · [中文贡献指南](CONTRIBUTING.zh-CN.md)
+- 🛡️ [Security policy](SECURITY.md) · [中文安全策略](SECURITY.zh-CN.md)
+- 📜 [Changelog](CHANGELOG.md)
+- 📦 [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases)
+- 🐳 [Container packages](https://github.com/Hughhhhcoder/MemoryProof/pkgs/container/memoryproof)
+
+## Migration from ForgetProof
+
+MemoryProof is the new umbrella name for the project formerly published as ForgetProof. The v0.1 evidence format and compatibility binary remain readable, while new scenarios and releases use `memoryproof.dev/v1` and the `memoryproof` command. If you have an old GitHub Action reference, update `Hughhhhcoder/ForgetProof@v0.1.0` to `Hughhhhcoder/MemoryProof@v1`; GitHub does not redirect Action references after a repository rename.

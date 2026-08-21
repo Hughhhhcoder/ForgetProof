@@ -1,0 +1,14 @@
+{"seq":1,"at_ms":1787321631505,"phase":"prepare","method":"hello","status":"PASS","details":{"protocol":"memoryproof.adapter/v1"}}
+{"seq":2,"at_ms":1787321631505,"phase":"prepare","method":"capabilities","status":"PASS","details":{"adapter":"zep","backend":"zep","version":"configured"}}
+{"seq":3,"at_ms":1787321631538,"phase":"run","method":"prepare","status":"PASS","details":{}}
+{"seq":4,"at_ms":1787321631544,"phase":"run","method":"ingest","status":"PASS","details":{}}
+{"seq":5,"at_ms":1787321631551,"phase":"run","method":"ingest","status":"PASS","details":{}}
+{"seq":6,"at_ms":1787321631551,"phase":"after-ingest","method":"settle","status":"PASS","details":{"state":"stable"}}
+{"seq":7,"at_ms":1787321631558,"phase":"before","method":"probe","status":"PASS","details":{"found":"true","probe":"target-before"}}
+{"seq":8,"at_ms":1787321631565,"phase":"before","method":"probe","status":"PASS","details":{"found":"true","probe":"control-before"}}
+{"seq":9,"at_ms":1787321631571,"phase":"run","method":"erase","status":"PASS","details":{}}
+{"seq":10,"at_ms":1787321631571,"phase":"after-erase","method":"settle","status":"PASS","details":{"state":"stable"}}
+{"seq":11,"at_ms":1787321631578,"phase":"after","method":"probe","status":"PASS","details":{"found":"false","probe":"target-after"}}
+{"seq":12,"at_ms":1787321631584,"phase":"after","method":"probe","status":"PASS","details":{"found":"true","probe":"control-after"}}
+{"seq":13,"at_ms":1787321631591,"phase":"after","method":"inspect","status":"PASS","details":{"found":"false","probe":"target-derived-after"}}
+{"seq":14,"at_ms":1787321631603,"phase":"cleanup","method":"cleanup","status":"PASS","details":{}}

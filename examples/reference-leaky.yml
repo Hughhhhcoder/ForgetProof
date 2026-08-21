@@ -1,21 +1,26 @@
-apiVersion: forgetproof.dev/v1alpha1
-kind: ErasureScenario
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
 metadata:
   name: reference-leaky
   description: A deliberately leaky backend leaves derived artifacts after deletion.
 spec:
+  suite: erasure
   adapter:
     name: reference-leaky
     mode: leaky
   isolation:
-    scope: run
+    scope: memoryproof-run
+    target_subject: target-subject
+    control_subject: control-subject
   fixtures:
     - id: target
-      content: "ForgetProof canary: target alpha 7f3e9d"
-      target: true
+      role: target
+      subject: target-subject
+      content: "MemoryProof canary target alpha 7f3e9d"
     - id: control
-      content: "ForgetProof canary: control beta 91c4a2"
-      target: false
+      role: control
+      subject: control-subject
+      content: "MemoryProof canary control beta 91c4a2"
   settle:
     timeout_ms: 5000
     interval_ms: 25
@@ -44,9 +49,9 @@ spec:
         fixture: target
         kind: agent
   profiles:
-    - FP-Object
-    - FP-Scope
-    - FP-Derived
-    - FP-Agent
+    - erasure.object
+    - erasure.scope
+    - erasure.derived
+    - erasure.agent
   privacy:
     raw_payloads: false

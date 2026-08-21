@@ -9,8 +9,8 @@
 ## Validation / 验证
 
 - [ ] `cargo fmt --all -- --check`
-- [ ] `cargo clippy --all-targets --all-features -- -D warnings`
-- [ ] `cargo test`
+- [ ] `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+- [ ] `cargo test --workspace`
 - [ ] `PYTHONPATH=python python -m unittest discover -s python/tests -v`
 - [ ] Documentation links and redaction boundaries checked / 已检查文档链接和脱敏边界
 

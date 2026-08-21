@@ -1,0 +1,128 @@
+{
+  "run_id": "run-1787321604254-79596",
+  "suite": "isolation",
+  "scenario": "isolation-reference",
+  "adapter": "reference-clean",
+  "backend": "memoryproof-reference",
+  "backend_version": "1.0.0",
+  "protocol": "memoryproof.adapter/v1",
+  "scenario_hash": "4040132e59f3cf18a13681923ff6949733677d12b3795a9352ee2ebbba4248d3",
+  "status": "PASS",
+  "exit_code": 0,
+  "profiles": [
+    {
+      "profile": "isolation.read",
+      "label": "IsolationProof · Read",
+      "status": "PASS",
+      "assertions": [
+        "before.target-from-target",
+        "before.target-from-control",
+        "before.control-from-control",
+        "before.control-from-target"
+      ]
+    },
+    {
+      "profile": "isolation.search",
+      "label": "IsolationProof · Search",
+      "status": "PASS",
+      "assertions": [
+        "after.target-search-from-control",
+        "after.control-search-from-target"
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "before.target-from-target",
+      "profile": "isolation.read",
+      "status": "PASS",
+      "message": "query subject 'target-subject' expected fixture 'target' to be isolated, observed visible",
+      "expected": true,
+      "observed": true,
+      "artifact": "namespace",
+      "evidence": [
+        "probe:target-from-target"
+      ]
+    },
+    {
+      "id": "before.target-from-control",
+      "profile": "isolation.read",
+      "status": "PASS",
+      "message": "query subject 'control-subject' expected fixture 'target' to be inaccessible, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "namespace",
+      "evidence": [
+        "probe:target-from-control"
+      ]
+    },
+    {
+      "id": "before.control-from-control",
+      "profile": "isolation.read",
+      "status": "PASS",
+      "message": "query subject 'control-subject' expected fixture 'control' to be isolated, observed visible",
+      "expected": true,
+      "observed": true,
+      "artifact": "namespace",
+      "evidence": [
+        "probe:control-from-control"
+      ]
+    },
+    {
+      "id": "before.control-from-target",
+      "profile": "isolation.read",
+      "status": "PASS",
+      "message": "query subject 'target-subject' expected fixture 'control' to be inaccessible, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "namespace",
+      "evidence": [
+        "probe:control-from-target"
+      ]
+    },
+    {
+      "id": "after.target-search-from-control",
+      "profile": "isolation.search",
+      "status": "PASS",
+      "message": "query subject 'control-subject' expected fixture 'target' to be inaccessible, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "namespace",
+      "evidence": [
+        "probe:target-search-from-control"
+      ]
+    },
+    {
+      "id": "after.control-search-from-target",
+      "profile": "isolation.search",
+      "status": "PASS",
+      "message": "query subject 'target-subject' expected fixture 'control' to be inaccessible, observed absent",
+      "expected": false,
+      "observed": false,
+      "artifact": "namespace",
+      "evidence": [
+        "probe:control-search-from-target"
+      ]
+    }
+  ],
+  "capabilities": [
+    "object_delete",
+    "scope_delete",
+    "probe",
+    "lexical_search",
+    "semantic_search",
+    "inspect",
+    "derived_inspect",
+    "derived_delete",
+    "agent_query",
+    "async_settle",
+    "isolated_namespace"
+  ],
+  "out_of_scope": [
+    "provider logs and backups",
+    "physical storage erasure",
+    "model-weight unlearning",
+    "unobservable artifacts outside the adapter boundary"
+  ],
+  "warnings": []
+}

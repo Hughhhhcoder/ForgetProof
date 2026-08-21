@@ -2,7 +2,16 @@
 
 [English](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
 
-All notable changes to ForgetProof are documented here.
+All notable changes to MemoryProof are documented here.
+
+## [Unreleased]
+
+### Changed
+
+- Rebranded the project as MemoryProof, with ForgetProof retained as the compatibility erasure suite.
+- Added the Isolation suite, stable `memoryproof.dev/v1` scenario API, and `memoryproof.adapter/v1` protocol.
+- Added target/control subject isolation, explicit `UNKNOWN` semantics, bundle compatibility, and a bilingual offline report.
+- Added multi-platform release packaging, multi-architecture OCI builds with SBOM/provenance, CodeQL, Scorecard, and a verified static matrix.
 
 ## [0.1.0] - 2026-08-18
 

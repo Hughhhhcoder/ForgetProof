@@ -2,7 +2,16 @@
 
 [English](CHANGELOG.md) · [简体中文](CHANGELOG.zh-CN.md)
 
-这里记录 ForgetProof 的重要变化。
+这里记录 MemoryProof 的重要变化。
+
+## [未发布]
+
+### 变更
+
+- 项目升级为 MemoryProof 总品牌，并保留 ForgetProof 作为兼容的遗忘套件。
+- 增加 Isolation 隔离套件、稳定的 `memoryproof.dev/v1` 场景 API 和 `memoryproof.adapter/v1` 协议。
+- 增加目标/控制主体隔离、明确的 `UNKNOWN` 语义、证据包兼容和双语离线报告。
+- 增加跨平台发行、多架构 OCI 镜像及 SBOM/来源证明、CodeQL、Scorecard 和已验证的静态矩阵。
 
 ## [0.1.0] - 2026-08-18
 
@@ -18,4 +27,4 @@
 
 ### 安全边界
 
-ForgetProof 不会声称物理磁盘擦除、服务商日志删除、备份删除或模型权重反学习。无法观察的部分统一保持为 `UNKNOWN` 或 `OUT OF SCOPE`。
+MemoryProof 不会声称物理磁盘擦除、服务商日志删除、备份删除或模型权重反学习。无法观察的部分统一保持为 `UNKNOWN` 或 `OUT OF SCOPE`。

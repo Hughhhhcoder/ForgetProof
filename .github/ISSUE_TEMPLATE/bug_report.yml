@@ -12,8 +12,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: ForgetProof version / 版本
-      placeholder: "0.1.0 or commit SHA"
+      label: MemoryProof version / 版本
+      placeholder: "1.0.0, 0.1.0, or commit SHA"
     validations:
       required: true
   - type: input

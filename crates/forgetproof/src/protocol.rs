@@ -17,21 +17,36 @@ pub struct AdapterClient {
 
 impl AdapterClient {
     pub fn spawn(name: &str, mode: &str, config: &BTreeMap<String, String>) -> Result<Self> {
-        let python = std::env::var("FORGETPROOF_PYTHON").unwrap_or_else(|_| "python3".to_owned());
+        let python = std::env::var("MEMORYPROOF_PYTHON")
+            .or_else(|_| std::env::var("FORGETPROOF_PYTHON"))
+            .unwrap_or_else(|_| {
+                if cfg!(windows) {
+                    "python".to_owned()
+                } else {
+                    "python3".to_owned()
+                }
+            });
         let module = match name {
-            "reference-clean" | "reference-leaky" => "forgetproof_adapters.reference",
+            "reference-clean"
+            | "reference-leaky"
+            | "reference-overdelete"
+            | "reference-slow"
+            | "reference-crash"
+            | "reference-malformed" => "forgetproof_adapters.reference",
             "mem0" => "forgetproof_adapters.mem0",
             "letta" => "forgetproof_adapters.letta",
             "zep" => "forgetproof_adapters.zep",
-            other => bail!("unknown registered adapter '{other}'"),
+            other => bail!("unknown registered adapter '{other}'; use 'memoryproof adapters list'"),
         };
 
-        let effective_mode = if name == "reference-clean" {
-            "clean"
-        } else if name == "reference-leaky" {
-            "leaky"
-        } else {
-            mode
+        let effective_mode = match name {
+            "reference-clean" => "clean",
+            "reference-leaky" => "leaky",
+            "reference-overdelete" => "overdelete",
+            "reference-slow" => "slow",
+            "reference-crash" => "crash",
+            "reference-malformed" => "malformed",
+            _ => mode,
         };
 
         let config_json = serde_json::to_string(config)?;
@@ -39,22 +54,26 @@ impl AdapterClient {
         command
             .arg("-m")
             .arg(module)
+            .env("MEMORYPROOF_ADAPTER_MODE", effective_mode)
             .env("FORGETPROOF_ADAPTER_MODE", effective_mode)
+            .env("MEMORYPROOF_ADAPTER_NAME", name)
             .env("FORGETPROOF_ADAPTER_NAME", name)
-            .env("FORGETPROOF_CONFIG_JSON", config_json)
+            .env("MEMORYPROOF_CONFIG_JSON", &config_json)
+            .env("FORGETPROOF_CONFIG_JSON", &config_json)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit());
+
         if let Ok(current_dir) = std::env::current_dir() {
             let package_root = current_dir.join("python");
             if package_root.join("forgetproof_adapters").is_dir() {
-                let existing = std::env::var("PYTHONPATH").unwrap_or_default();
-                let value = if existing.is_empty() {
-                    package_root.display().to_string()
-                } else {
-                    format!("{}:{}", package_root.display(), existing)
-                };
-                command.env("PYTHONPATH", value);
+                let mut paths = vec![package_root];
+                if let Some(existing) = std::env::var_os("PYTHONPATH") {
+                    paths.extend(std::env::split_paths(&existing));
+                }
+                let joined = std::env::join_paths(paths)
+                    .context("failed to construct adapter PYTHONPATH")?;
+                command.env("PYTHONPATH", joined);
             }
         }
 
@@ -95,9 +114,14 @@ impl AdapterClient {
             "method": method,
             "params": params,
         });
-        serde_json::to_writer(&mut self.stdin, &request)?;
-        self.stdin.write_all(b"\n")?;
-        self.stdin.flush()?;
+        serde_json::to_writer(&mut self.stdin, &request)
+            .with_context(|| format!("failed to write adapter request '{method}'"))?;
+        self.stdin
+            .write_all(b"\n")
+            .with_context(|| format!("failed to terminate adapter request '{method}'"))?;
+        self.stdin
+            .flush()
+            .with_context(|| format!("failed to flush adapter request '{method}'"))?;
 
         let line = self
             .lines
@@ -110,10 +134,13 @@ impl AdapterClient {
                     anyhow!("adapter exited while handling '{method}'")
                 }
             })??;
+        if line.trim().is_empty() {
+            bail!("adapter emitted an empty response for '{method}'");
+        }
         let response: Value = serde_json::from_str(&line)
             .with_context(|| format!("adapter emitted invalid JSON for '{method}'"))?;
         if response.get("id").and_then(Value::as_str) != Some(id.as_str()) {
-            bail!("adapter response id mismatch for '{method}'")
+            bail!("adapter response id mismatch for '{method}'");
         }
         if response.get("ok").and_then(Value::as_bool) == Some(true) {
             Ok(response.get("result").cloned().unwrap_or(Value::Null))
@@ -127,17 +154,35 @@ impl AdapterClient {
                 .get("message")
                 .and_then(Value::as_str)
                 .unwrap_or("adapter returned an error");
-            bail!("{code}: {message}")
+            bail!("{code}: {message}");
         }
     }
 
     pub fn hello(&mut self, timeout_ms: u64) -> Result<Value> {
-        self.call("hello", json!({ "protocol": PROTOCOL_VERSION }), timeout_ms)
+        let value = self.call("hello", json!({ "protocol": PROTOCOL_VERSION }), timeout_ms)?;
+        let protocol = value
+            .get("protocol")
+            .and_then(Value::as_str)
+            .ok_or_else(|| anyhow!("adapter hello response omitted protocol"))?;
+        if protocol != PROTOCOL_VERSION {
+            bail!(
+                "protocol mismatch: runner expects {PROTOCOL_VERSION}, adapter returned {protocol}"
+            );
+        }
+        Ok(value)
     }
 
     pub fn capabilities(&mut self, timeout_ms: u64) -> Result<Capabilities> {
         let value = self.call("capabilities", json!({}), timeout_ms)?;
-        serde_json::from_value(value).context("invalid capabilities response")
+        let capabilities: Capabilities =
+            serde_json::from_value(value).context("invalid capabilities response")?;
+        if capabilities.protocol != PROTOCOL_VERSION {
+            bail!(
+                "protocol mismatch in capabilities: expected {PROTOCOL_VERSION}, got {}",
+                capabilities.protocol
+            );
+        }
+        Ok(capabilities)
     }
 
     pub fn close(&mut self) {
