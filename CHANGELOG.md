@@ -6,6 +6,10 @@ All notable changes to MemoryProof are documented here.
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [1.0.2] - 2026-08-22
+
 ### Changed
 
 - Rebranded the project as MemoryProof, with ForgetProof retained as the compatibility erasure suite.

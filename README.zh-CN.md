@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776ab?logo=python&logoColor=white" alt="Python 3.11 及以上" />
   <img src="https://img.shields.io/badge/privacy-local--first-10b981?logo=shield&logoColor=white" alt="本地优先隐私" />
   <img src="https://img.shields.io/badge/evidence-SHA--256-f59e0b?logo=datadog&logoColor=white" alt="SHA-256 证据" />
-  <img src="https://img.shields.io/badge/status-v1%20preview-8b5cf6?logo=rocket" alt="v1 预览" />
+  <img src="https://img.shields.io/badge/status-v1.0.2-8b5cf6?logo=rocket" alt="v1.0.2" />
 </p>
 
 <p align="center">
@@ -126,7 +126,7 @@ cargo run -- run examples/reference-leaky.yml
 
 ### 使用发行版二进制或容器
 
-可以从 [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases) 下载 Linux、macOS 或 Windows 二进制，也可以运行公开容器：
+可以从 [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases) 下载 Linux、macOS 或 Windows 二进制，也可以运行 GHCR 容器：
 
 ```bash
 docker run --rm -v "$PWD":/workspace \
@@ -174,7 +174,7 @@ MemoryProof 是一个包含两个套件的总项目：
 
 ## 适配器
 
-| 适配器 | 模式 | v1 预览覆盖 |
+| 适配器 | 模式 | v1 覆盖 |
 | --- | --- | --- |
 | `reference-clean` | 本地 | 完整遗忘和隔离参考行为 |
 | `reference-leaky` | 本地 | 故意遗留衍生工件 |

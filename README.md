@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776ab?logo=python&logoColor=white" alt="Python 3.11 or newer" />
   <img src="https://img.shields.io/badge/privacy-local--first-10b981?logo=shield&logoColor=white" alt="Local-first privacy" />
   <img src="https://img.shields.io/badge/evidence-SHA--256-f59e0b?logo=datadog&logoColor=white" alt="SHA-256 evidence" />
-  <img src="https://img.shields.io/badge/status-v1%20preview-8b5cf6?logo=rocket" alt="v1 preview" />
+  <img src="https://img.shields.io/badge/status-v1.0.2-8b5cf6?logo=rocket" alt="v1.0.2" />
 </p>
 
 <p align="center">
@@ -126,7 +126,7 @@ It exits `1`: the raw item disappears, but a derived artifact remains observable
 
 ### Use the released binary or container
 
-Download a platform binary from [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases), or run the public image:
+Download a platform binary from [Releases](https://github.com/Hughhhhcoder/MemoryProof/releases), or run the GHCR image:
 
 ```bash
 docker run --rm -v "$PWD":/workspace \
@@ -174,7 +174,7 @@ These boundaries are part of the product, not a footnote. Reports explicitly sep
 
 ## Supported adapters
 
-| Adapter | Modes | Coverage in v1 preview |
+| Adapter | Modes | Coverage in v1 |
 | --- | --- | --- |
 | `reference-clean` | local | Full erasure and isolation reference behavior |
 | `reference-leaky` | local | Deliberate derived-artifact residue |

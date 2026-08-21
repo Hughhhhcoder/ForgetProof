@@ -44,7 +44,7 @@ runs:
           --output "/workspace/$MEMORYPROOF_OUTPUT" \
           --allow-network="$MEMORYPROOF_ALLOW_NETWORK"
         code=$?
-        bundle=$(find "$GITHUB_WORKSPACE/$MEMORYPROOF_OUTPUT" -mindepth 1 -maxdepth 1 -type d -print -quit)
+        bundle=$(find "$GITHUB_WORKSPACE/$MEMORYPROOF_OUTPUT" -mindepth 1 -maxdepth 1 -type d -print | sort | tail -n 1)
         echo "bundle-path=${bundle#"$GITHUB_WORKSPACE/"}" >> "$GITHUB_OUTPUT"
         echo "exit-code=$code" >> "$GITHUB_OUTPUT"
         status=""
