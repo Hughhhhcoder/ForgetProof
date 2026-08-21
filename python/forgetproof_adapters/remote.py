@@ -82,7 +82,10 @@ class RemoteAdapter(AdapterServer):
                         break
                 status = response.status
         except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")[:300]
+            try:
+                detail = exc.read().decode("utf-8", errors="replace")[:300]
+            finally:
+                exc.close()
             raise AdapterError(
                 f"HTTP {exc.code} from {method} {path}: {detail}",
                 "http_error",
