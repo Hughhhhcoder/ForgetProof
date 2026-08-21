@@ -1,0 +1,82 @@
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
+metadata:
+  description: Zep episode and graph erasure with separate temporary users.
+  name: zep-erasure
+spec:
+  adapter:
+    config:
+      base_url: http://localhost:8000
+    mode: self-hosted
+    name: zep
+  erase:
+    intent: subject_erase
+    scope: ''
+    target: target
+  fixtures:
+  - content: sha256:acc522fc044c565cb84eebf3fc180284403187eee97c341219e7d037e0cac3f5
+      len:36
+    id: target
+    kind: memory
+    namespace: ''
+    role: target
+    subject: target-subject
+    target: false
+  - content: sha256:8aaf3b5f99ce306785b8143d1a1f5fa1b35777de55b6d41172e9146693290843
+      len:30
+    id: control
+    kind: memory
+    namespace: ''
+    role: control
+    subject: control-subject
+    target: false
+  isolation:
+    agent: ''
+    control_subject: control-subject
+    scope: memoryproof-run
+    subject: ''
+    target_subject: target-subject
+    thread: ''
+  privacy:
+    raw_payloads: false
+  probes:
+    after:
+    - as_subject: ''
+      fixture: target
+      id: target-after
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: control
+      id: control-after
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: target
+      id: target-derived-after
+      kind: inspect
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    before:
+    - as_subject: ''
+      fixture: target
+      id: target-before
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: control
+      id: control-before
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+  profiles:
+  - erasure.object
+  - erasure.scope
+  - erasure.derived
+  settle:
+    interval_ms: 1000
+    timeout_ms: 30000
+  suite: erasure

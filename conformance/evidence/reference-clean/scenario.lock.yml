@@ -1,0 +1,88 @@
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
+metadata:
+  description: A deterministic clean backend removes raw and derived artifacts.
+  name: reference-clean
+spec:
+  adapter:
+    config: {}
+    mode: clean
+    name: reference-clean
+  erase:
+    intent: subject_erase
+    scope: ''
+    target: target
+  fixtures:
+  - content: sha256:9df585a469698301386fcf8fa937ed898fcb0bb0d2ecbae8501a37acd697d4d6
+      len:38
+    id: target
+    kind: memory
+    namespace: ''
+    role: target
+    subject: target-subject
+    target: false
+  - content: sha256:ec352e339e595077e80dc559d83350b185d517967d83202117e0e2986216783e
+      len:38
+    id: control
+    kind: memory
+    namespace: ''
+    role: control
+    subject: control-subject
+    target: false
+  isolation:
+    agent: ''
+    control_subject: control-subject
+    scope: memoryproof-run
+    subject: ''
+    target_subject: target-subject
+    thread: ''
+  privacy:
+    raw_payloads: false
+  probes:
+    after:
+    - as_subject: ''
+      fixture: target
+      id: target-after
+      kind: exact
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: control
+      id: control-after
+      kind: exact
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: target
+      id: target-derived-after
+      kind: inspect
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: target
+      id: target-agent-after
+      kind: agent
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    before:
+    - as_subject: ''
+      fixture: target
+      id: target-before
+      kind: exact
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: control
+      id: control-before
+      kind: exact
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+  profiles:
+  - erasure.object
+  - erasure.scope
+  - erasure.derived
+  - erasure.agent
+  settle:
+    interval_ms: 25
+    timeout_ms: 5000
+  suite: erasure

@@ -1,0 +1,89 @@
+apiVersion: memoryproof.dev/v1
+kind: AssuranceScenario
+metadata:
+  description: Letta archival passage and Agent erasure with owned temporary Agents.
+  name: letta-erasure
+spec:
+  adapter:
+    config:
+      base_url: http://localhost:8283
+    mode: self-hosted
+    name: letta
+  erase:
+    intent: subject_erase
+    scope: ''
+    target: target
+  fixtures:
+  - content: sha256:df94daba03c3f2f49bd5eb6ce64fa57395f7b309649d79da0f9309bb9d375938
+      len:38
+    id: target
+    kind: memory
+    namespace: ''
+    role: target
+    subject: target-subject
+    target: false
+  - content: sha256:f9e5cd398085acf2075cff253f91a4629ec9d5a0d10e7deaf3f670a061621f08
+      len:32
+    id: control
+    kind: memory
+    namespace: ''
+    role: control
+    subject: control-subject
+    target: false
+  isolation:
+    agent: ''
+    control_subject: control-subject
+    scope: memoryproof-run
+    subject: ''
+    target_subject: target-subject
+    thread: ''
+  privacy:
+    raw_payloads: false
+  probes:
+    after:
+    - as_subject: ''
+      fixture: target
+      id: target-after
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: control
+      id: control-after
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: target
+      id: target-derived-after
+      kind: inspect
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: target
+      id: target-agent-after
+      kind: agent
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    before:
+    - as_subject: ''
+      fixture: target
+      id: target-before
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+    - as_subject: ''
+      fixture: control
+      id: control-before
+      kind: semantic
+      query: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        len:0
+  profiles:
+  - erasure.object
+  - erasure.scope
+  - erasure.derived
+  - erasure.agent
+  settle:
+    interval_ms: 1000
+    timeout_ms: 30000
+  suite: erasure

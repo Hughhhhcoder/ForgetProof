@@ -12,7 +12,7 @@
     "events.ndjson",
     "results.json",
     "report.html",
-    "junit.xml"
-  ],
-  "bundle_hash": ""
+    "junit.xml",
+    "scenario.lock.yml"
+  ]
 }
